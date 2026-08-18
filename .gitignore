@@ -1,0 +1,18 @@
+node_modules/
+.next/
+out/
+npm-debug.log*
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+
+# Local build/editor artifacts
+*.tsbuildinfo
+.vercel/
+.DS_Store
+Thumbs.db
+
+# Local visual QA captures
+/preview*.png
