@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="title desc">
+  <title id="title">Knowledge Atlas — Personal AI Knowledge System</title>
+  <desc id="desc">A Swiss editorial title composition showing project archives flowing into section nodes, local search, source backlinks, and a static question-answer interface.</desc>
+
+  <rect width="1200" height="400" rx="18" fill="#f1ede4"/>
+  <path d="M48 52H1152M48 360H1152" stroke="#0c0c0c" stroke-width="2"/>
+  <path d="M744 52V360" stroke="#beb9af" stroke-width="1"/>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">
+    <text x="48" y="35" fill="#365ce8" font-size="16" font-weight="700" letter-spacing="2">PERSONAL AI KNOWLEDGE SYSTEM / ARCHIVE 00</text>
+    <text x="1152" y="35" fill="#686b68" font-size="16" text-anchor="end">NEXT.JS · REACT · TYPESCRIPT</text>
+  </g>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif">
+    <text x="48" y="132" fill="#365ce8" font-size="54" font-weight="800">00</text>
+    <text x="142" y="143" fill="#0c0c0c" font-size="82" font-weight="800" letter-spacing="-5">KNOWLEDGE</text>
+    <text x="142" y="224" fill="#365ce8" font-size="82" font-weight="800" letter-spacing="-5">ATLAS</text>
+    <rect x="142" y="249" width="6" height="48" fill="#ed4c3e"/>
+    <text x="166" y="270" fill="#0c0c0c" font-size="23" font-weight="650">A searchable archive for projects and research.</text>
+    <text x="166" y="298" fill="#686b68" font-size="20">项目优先 · 来源可追溯 · 媒体归档 · 问答有边界</text>
+  </g>
+
+  <g transform="translate(786 76)" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif">
+    <rect x="0" y="0" width="326" height="58" fill="#0c0c0c"/>
+    <text x="20" y="36" fill="#f1ede4" font-size="21" font-weight="700">PROJECT ARCHIVE</text>
+    <text x="304" y="35" fill="#ed4c3e" font-size="18" text-anchor="end">01</text>
+
+    <path d="M163 58V82M163 82H78V100M163 82H248V100" fill="none" stroke="#0c0c0c" stroke-width="2"/>
+    <rect x="0" y="100" width="156" height="54" fill="#365ce8"/>
+    <rect x="170" y="100" width="156" height="54" fill="#f1ede4" stroke="#0c0c0c" stroke-width="2"/>
+    <text x="18" y="133" fill="#ffffff" font-size="19" font-weight="700">SECTION NODES</text>
+    <text x="188" y="133" fill="#0c0c0c" font-size="19" font-weight="700">SOURCE REFS</text>
+
+    <path d="M78 154V180M248 154V180" fill="none" stroke="#0c0c0c" stroke-width="2"/>
+    <rect x="0" y="180" width="156" height="54" fill="#f1ede4" stroke="#0c0c0c" stroke-width="2"/>
+    <rect x="170" y="180" width="156" height="54" fill="#f1ede4" stroke="#0c0c0c" stroke-width="2"/>
+    <text x="18" y="213" fill="#0c0c0c" font-size="19" font-weight="700">LOCAL SEARCH</text>
+    <text x="188" y="213" fill="#0c0c0c" font-size="19" font-weight="700">BACKLINKS</text>
+
+    <circle cx="78" cy="246" r="5" fill="#ed4c3e"/>
+    <circle cx="248" cy="246" r="5" fill="#ed4c3e"/>
+    <text x="0" y="266" fill="#686b68" font-size="16">ORAMA / CMDK</text>
+    <text x="326" y="266" fill="#686b68" font-size="16" text-anchor="end">ASK / STATIC MOCK</text>
+  </g>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16">
+    <text x="48" y="385" fill="#686b68">SOURCE-AWARE FRONTEND PROTOTYPE</text>
+    <text x="1152" y="385" fill="#686b68" text-anchor="end">G1ANTBOT / KNOWLEDGE-ATLAS</text>
+  </g>
+</svg>
