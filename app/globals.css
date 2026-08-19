@@ -108,6 +108,7 @@ main { max-width: var(--max); padding: 0 28px 100px; margin: 0 auto; }
 .education-year { color: var(--blue); font: 11px "Courier New", monospace; }
 .education-item strong { display: block; }
 .education-item span { color: var(--muted); font-size: 12px; }
+.internship-item p { margin: 10px 0 0; font-size: 13px; line-height: 1.7; }
 .about-topics { grid-template-columns: 1fr; }
 .about-topics .topic-item, .about-topics .topic-item + .topic-item { min-height: 0; padding: 14px 0; border-right: 0; border-bottom: 1px solid var(--line); }
 .about-topics .topic-item b { display: inline-block; width: 36px; margin: 0; }
@@ -424,6 +425,8 @@ main { background: var(--paper); color: var(--ink); padding-bottom: 110px; }
 .archive-figure-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
 .archive-figure-grid.figure-count-1 { grid-template-columns: 1fr; }
 .archive-figure-grid.figure-sequence { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.archive-figure-grid.figure-portrait-set { grid-template-columns: repeat(2, minmax(0,1fr)); max-width: 620px; }
+.archive-figure-grid.figure-count-1.figure-portrait-set { grid-template-columns: minmax(0, 300px); }
 .archive-figure { min-width: 0; margin: 0; }
 .archive-figure-image { display: grid; place-items: center; min-height: 180px; overflow: hidden; border: 1px solid var(--ink); background: #fff; }
 .figure-wide .archive-figure-image { min-height: 0; aspect-ratio: 16 / 10; }
@@ -433,6 +436,8 @@ main { background: var(--paper); color: var(--ink); padding-bottom: 110px; }
 .figure-square img { height: 100%; object-fit: contain; }
 .figure-sequence .archive-figure-image { aspect-ratio: 4 / 3; }
 .figure-sequence img { height: 100%; object-fit: cover; }
+.figure-portrait .archive-figure-image { min-height: 0; aspect-ratio: 1 / 2; }
+.figure-portrait img { height: 100%; object-fit: contain; }
 .editorial-section .archive-points { margin-top: 28px; }
 .editorial-section .section-sources { margin-top: 24px; }
 .editorial-section .source-card { background: transparent; }
@@ -488,6 +493,7 @@ main { background: var(--paper); color: var(--ink); padding-bottom: 110px; }
   .editorial-section-copy h2 { font-size: clamp(1.8rem, 9vw, 2.65rem); overflow-wrap: anywhere; }
   .editorial-section-copy, .editorial-section:not(:has(.editorial-section-figures)) .editorial-section-copy, .editorial-section-figures { grid-column: 2; }
   .archive-figure-grid, .archive-figure-grid.figure-sequence { grid-template-columns: 1fr; }
+  .archive-figure-grid.figure-portrait-set { grid-template-columns: minmax(0, 300px); max-width: 300px; }
   .figure-sequence .archive-figure-image { aspect-ratio: 16 / 9; min-height: 0; }
   .editorial-media { grid-template-columns: 48px minmax(0,1fr); }
   .editorial-media .editorial-section-figures { grid-column: 1 / -1; }

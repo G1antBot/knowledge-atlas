@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="820" viewBox="0 0 1440 820" role="img" aria-labelledby="title desc">
+  <title id="title">圖片管理系統掃碼登入流程</title>
+  <desc id="desc">Web、服務端和移動端透過隨機字串、掃碼提交、身分檢查與輪詢完成登入。</desc>
+  <rect width="1440" height="820" fill="#0C0C0C"/>
+  <g font-family="Arial Narrow, Noto Sans TC, sans-serif">
+    <text x="64" y="66" fill="#FF3B30" font-size="24" font-weight="700">AUTH / 03</text>
+    <text x="64" y="116" fill="#F2EFE6" font-size="48" font-weight="800">掃碼登入不是一次請求</text>
+    <text x="64" y="154" fill="#A7A7A2" font-size="18">它由 Web、移動端與服務端共同維持狀態。</text>
+
+    <g fill="#F2EFE6" font-size="16" font-weight="700">
+      <text x="64" y="226">WEB</text>
+      <text x="536" y="226">SPRING BOOT</text>
+      <text x="1058" y="226">ANDROID</text>
+    </g>
+    <g stroke="#363636" stroke-width="2">
+      <path d="M64 246H410V746H64Z" fill="#151515"/>
+      <path d="M536 246H882V746H536Z" fill="#151515"/>
+      <path d="M1058 246H1376V746H1058Z" fill="#151515"/>
+    </g>
+
+    <g font-family="Courier New, monospace" font-size="18" font-weight="700">
+      <circle cx="112" cy="306" r="27" fill="#1D4ED8"/><text x="100" y="313" fill="#FFFFFF">01</text>
+      <circle cx="584" cy="380" r="27" fill="#FF3B30"/><text x="572" y="387" fill="#FFFFFF">02</text>
+      <circle cx="1106" cy="454" r="27" fill="#1D4ED8"/><text x="1094" y="461" fill="#FFFFFF">03</text>
+      <circle cx="584" cy="528" r="27" fill="#FF3B30"/><text x="572" y="535" fill="#FFFFFF">04</text>
+      <circle cx="112" cy="602" r="27" fill="#1D4ED8"/><text x="100" y="609" fill="#FFFFFF">05</text>
+      <circle cx="112" cy="682" r="27" fill="#F2EFE6"/><text x="100" y="689" fill="#0C0C0C">06</text>
+    </g>
+
+    <g fill="#F2EFE6" font-size="20" font-weight="700">
+      <text x="158" y="299">請求隨機字串</text><text x="158" y="328" fill="#A7A7A2" font-size="15" font-weight="400">顯示為二維碼</text>
+      <text x="630" y="373">建立待確認狀態</text><text x="630" y="402" fill="#A7A7A2" font-size="15" font-weight="400">保存字串與時效</text>
+      <text x="1152" y="447">掃描並提交</text><text x="1152" y="476" fill="#A7A7A2" font-size="15" font-weight="400">字串＋使用者資訊</text>
+      <text x="630" y="521">配對與身分檢查</text><text x="630" y="550" fill="#A7A7A2" font-size="15" font-weight="400">更新登入結果</text>
+      <text x="158" y="595">輪詢取得結果</text><text x="158" y="624" fill="#A7A7A2" font-size="15" font-weight="400">進入使用者主頁</text>
+      <text x="158" y="675">持久化鑑權</text><text x="158" y="704" fill="#A7A7A2" font-size="15" font-weight="400">支援 7 天登入狀態</text>
+    </g>
+
+    <g fill="none" stroke="#F2EFE6" stroke-width="3">
+      <path d="M410 306H516"/><path d="M516 296L534 306L516 316Z" fill="#F2EFE6"/>
+      <path d="M882 454H1038"/><path d="M1028 444L1046 454L1028 464Z" fill="#F2EFE6"/>
+      <path d="M1058 528H902"/><path d="M912 518L894 528L912 538Z" fill="#F2EFE6"/>
+      <path d="M536 602H430"/><path d="M440 592L422 602L440 612Z" fill="#F2EFE6"/>
+    </g>
+    <text x="1058" y="786" fill="#A7A7A2" font-size="14">不公開 Token 值、金鑰或內部位址</text>
+  </g>
+</svg>

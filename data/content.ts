@@ -24,7 +24,7 @@ export type ArchiveFigure = {
   path: string;
   alt: Bilingual;
   caption: Bilingual;
-  format?: "wide" | "square" | "sequence";
+  format?: "wide" | "square" | "sequence" | "portrait";
 };
 
 export type ArchiveSection = {
@@ -64,6 +64,8 @@ const thesisChapter4: SourceRef = { label: { zh: "論文第 4 章 · 實驗與�
 const thesisChapter5: SourceRef = { label: { zh: "論文第 5 章 · 總結與展望", en: "Thesis chapter 5 · Conclusion and outlook" }, kind: "thesis" };
 const silReadme: SourceRef = { label: { zh: "SIL README · 系統概述與執行機制", en: "SIL README · System overview and runtime mechanisms" }, kind: "readme" };
 const silReadmeLlm: SourceRef = { label: { zh: "SIL README.LLM · 評測與安全說明", en: "SIL README.LLM · Evaluation and safety notes" }, kind: "readme" };
+const imageSystemDeck: SourceRef = { label: { zh: "圖片管理系統答辯簡報 · 系統設計與實作", en: "Image management system presentation · Design and implementation" }, kind: "archive" };
+const imageSystemResume: SourceRef = { label: { zh: "個人履歷 · 團隊角色與主要工作", en: "Personal resume · Team role and primary contributions" }, kind: "archive" };
 
 export const mediaAssets: MediaAsset[] = [
   {
@@ -282,15 +284,94 @@ export const archiveProjects: ProjectArchive[] = [
     slug: "image-management-system",
     index: "02",
     title: { zh: "圖片管理系統", en: "Image Management System" },
-    subtitle: { zh: "資料待補檔：先保留索引位置，不擴寫本輪尚未核驗的專案細節。", en: "Archive pending: keep the index position without expanding details not re-verified in this iteration." },
-    category: { zh: "專案檔案 · 待補檔", en: "Project archive · pending" },
-    period: "Archive pending",
-    status: "pending",
+    subtitle: { zh: "四人團隊完成的跨端圖片管理系統，這份檔案只記錄我負責的後端與工程化工作。", en: "A cross-platform image system built by a four-person team, documented here through my backend and delivery responsibilities." },
+    category: { zh: "團隊專案 · Web／移動端／服務端", en: "Team project · Web / mobile / server" },
+    period: "2024.11—2025.02",
+    status: "secondary",
     accent: "red",
-    summary: { zh: "圖片資產流程的專案入口，等待後續補入可公開、可引用的專案檔案。", en: "An entry for an image-asset flow, awaiting a public, citable project record." },
-    tags: ["Pending archive", "Asset flow"],
-    sections: [],
-    sources: [{ label: { zh: "後續資料補檔", en: "Future archive intake" }, kind: "archive" }],
+    summary: { zh: "這個課程專案由四人協作完成，涵蓋 PC 端、Android 移動端、Spring Boot 服務端、MySQL 與阿里雲 OSS。我主要負責掃碼與持久化登入、物件儲存與敏感資訊過濾、GitLab 協作流程，以及 Docker 容器化部署。", en: "This four-person course project spans a PC client, Android client, Spring Boot services, MySQL, and Alibaba Cloud OSS. My work focused on QR and persistent login, object storage and sensitive-content filtering, GitLab collaboration, and Docker deployment." },
+    tags: ["4-person team", "Spring Boot", "Vue 3", "MySQL", "Alibaba Cloud OSS", "Docker"],
+    sections: [
+      {
+        id: "plain-summary",
+        title: { zh: "這個系統處理什麼", en: "What the system handles" },
+        body: { zh: "系統把登入、圖片、相簿與檔案儲存整理成一條跨端流程。使用者可以從 PC 或 Android 端登入，管理圖片與相簿；服務端負責身分驗證、資料操作與檔案存取，圖片本體存入阿里雲 OSS，資料庫保留使用者、圖片、相簿與檔案位置之間的關係。", en: "The system connects authentication, images, albums, and file storage across PC and Android clients. The server handles identity, data operations, and file access; image objects live in Alibaba Cloud OSS while the database keeps user, image, album, and file-location relationships." },
+        points: [
+          { zh: "專案由四人共同完成；本頁不把團隊交付全部歸為個人成果。", en: "The project was completed by four people; this page does not present the entire team delivery as individual work." },
+          { zh: "我的角色是後端開發，並負責部分協作與部署工作。", en: "My role was backend development, with additional collaboration and deployment responsibilities." },
+        ],
+        figures: [
+          {
+            path: "/research/image-management/mobile-library.webp",
+            alt: { zh: "Android 端圖片列表與標籤模式", en: "Android image list and tag mode" },
+            caption: { zh: "A｜Android 圖片列表（團隊交付介面）：記錄搜尋、標籤模式與分頁。", en: "A | Android image list (team-delivered interface): search, tag mode, and pagination." },
+            format: "portrait",
+          },
+          {
+            path: "/research/image-management/crop-editor.webp",
+            alt: { zh: "Android 端圖片裁剪介面", en: "Android image cropping interface" },
+            caption: { zh: "B｜Android 圖片裁剪（團隊交付介面）：選擇常用比例後提交裁剪結果。", en: "B | Android image cropper (team-delivered interface): choose a common aspect ratio and submit the crop." },
+            format: "portrait",
+          },
+        ],
+        sources: [imageSystemDeck, imageSystemResume],
+      },
+      {
+        id: "system-structure",
+        title: { zh: "跨端系統結構", en: "Cross-platform system structure" },
+        body: { zh: "PC 端使用 Vue 3、Element Plus、Vuex 與 Axios；Android 端提供登入、相簿、圖片編輯與掃碼操作；Spring Boot 服務端按照 Controller、Service、Mapper 等層次組織業務，資料存入 MySQL，圖片物件存入阿里雲 OSS。", en: "The PC client uses Vue 3, Element Plus, Vuex, and Axios. Android provides login, albums, image editing, and QR scanning. Spring Boot organizes server logic through Controller, Service, and Mapper layers, with MySQL for records and Alibaba Cloud OSS for image objects." },
+        figures: [
+          {
+            path: "/research/image-management/system-architecture.svg",
+            alt: { zh: "圖片管理系統跨端架構圖", en: "Cross-platform architecture diagram for the image management system" },
+            caption: { zh: "依據答辯簡報重新繪製；圖中只保留已核驗的端、服務與儲存關係。", en: "Redrawn from the presentation, retaining only verified client, service, and storage relationships." },
+            format: "wide",
+          },
+        ],
+        sources: [imageSystemDeck],
+      },
+      {
+        id: "authentication",
+        title: { zh: "掃碼登入與持久化鑑權", en: "QR login and persistent authentication" },
+        body: { zh: "我實作了掃碼登入與狀態輪詢。Web 端取得隨機字串並產生二維碼；移動端掃描後提交字串與使用者資訊；服務端完成配對與身分檢查，再把登入結果交回 Web 端。登入狀態同時支援 7 天持久化鑑權。", en: "I implemented QR login and status polling. The web client requests a random string and presents it as a QR code; the mobile client submits the scanned string with user information; the server matches and validates the request before returning the login result to the web client. Authentication also supports a seven-day persistent session." },
+        figures: [
+          {
+            path: "/research/image-management/qr-login-flow.svg",
+            alt: { zh: "Web、移動端與服務端之間的掃碼登入流程", en: "QR login flow between web, mobile, and server" },
+            caption: { zh: "流程圖由專案簡報與履歷中的職責描述整理，不展示金鑰、Token 值或內部位址。", en: "Reconstructed from the project presentation and role record without exposing keys, token values, or internal addresses." },
+            format: "wide",
+          },
+        ],
+        sources: [imageSystemDeck, imageSystemResume],
+      },
+      {
+        id: "storage-review",
+        title: { zh: "物件儲存與內容審核", en: "Object storage and content review" },
+        body: { zh: "我接入阿里雲 OSS，處理大檔案分片上傳與靜態資源存取。資料庫不直接保存圖片內容，而是保存對應位置與業務資料；服務端另外加入圖片與文字的敏感資訊過濾與審核流程。", en: "I integrated Alibaba Cloud OSS for multipart uploads and static-resource access. The database stores locations and business records rather than image bodies, while the server adds sensitive-content filtering and review for images and text." },
+        figures: [
+          {
+            path: "/research/image-management/batch-upload.webp",
+            alt: { zh: "Android 端批次上傳進度畫面", en: "Android batch-upload progress screen" },
+            caption: { zh: "上傳進度回饋（團隊交付介面）：這個畫面對應我負責的服務端檔案接收與 OSS 儲存流程。", en: "Upload progress (team-delivered interface): this screen corresponds to the server-side file intake and OSS storage flow I implemented." },
+            format: "portrait",
+          },
+        ],
+        sources: [imageSystemDeck, imageSystemResume],
+      },
+      {
+        id: "collaboration-deployment",
+        title: { zh: "協作與部署", en: "Collaboration and deployment" },
+        body: { zh: "四人團隊使用 GitLab 管理程式碼，依照 Git Flow 組織分支與並行迭代。我編寫 Dockerfile，把應用與執行環境封裝為映像，使用 Docker 降低不同環境之間的設定差異。", en: "The four-person team used GitLab and a Git Flow branch model for parallel iteration. I wrote the Dockerfile and packaged the application with its runtime into an image, reducing configuration differences across environments." },
+        sources: [imageSystemResume],
+      },
+      {
+        id: "limits",
+        title: { zh: "檔案邊界", en: "Archive boundaries" },
+        body: { zh: "現有證據來自課程答辯簡報與個人履歷。它可以說明系統結構、功能與個人分工，但沒有提供正式上線後的使用量、可用性或效能數據；因此本頁不補寫未經驗證的營運結果。", en: "The current evidence comes from the course presentation and personal resume. It supports the system structure, functions, and individual role, but does not provide production usage, availability, or performance data, so this page does not invent operational outcomes." },
+        sources: [imageSystemDeck, imageSystemResume],
+      },
+    ],
+    sources: [imageSystemDeck, imageSystemResume],
   },
   {
     slug: "team-blog-platform",
@@ -309,7 +390,16 @@ export const archiveProjects: ProjectArchive[] = [
 ];
 
 export const education = [
-  { period: "2022.09—2026.06", school: { zh: "中南大學", en: "Central South University" }, detail: { zh: "計算機科學與技術學士 · 長沙", en: "BSc in Computer Science and Technology · Changsha" } },
+  { period: "2022.09—2026.06", school: { zh: "中南大學", en: "Central South University" }, detail: { zh: "計算機科學與技術學士 · 已畢業並取得學位 · 長沙", en: "BSc in Computer Science and Technology · Graduated with degree · Changsha" } },
+];
+
+export const internships = [
+  {
+    period: "2026.01.01—2026.05.29",
+    company: { zh: "長沙空中靈鳥智能科技有限公司", en: "Changsha Kongzhong Lingniao Intelligent Technology Co., Ltd." },
+    detail: { zh: "集群智能事業部 · 實習生", en: "Swarm Intelligence Division · Intern" },
+    note: { zh: "實習鑑定記錄我在工作中保持勤奮，做事嚴謹；遇到不熟悉的問題時，會向有經驗的同事請教。", en: "The internship assessment records a diligent and careful working approach, including asking experienced colleagues when encountering unfamiliar problems." },
+  },
 ];
 
 export const topicIndex: Bilingual[] = [
@@ -329,6 +419,8 @@ export const recommendedQuestions: Bilingual[] = [
   { zh: "視覺伺服為什麼分成對準與逼近？", en: "Why split visual servoing into alignment and approach?" },
   { zh: "這裡的 strike 任務具體指什麼？", en: "What does the strike task mean here?" },
   { zh: "這份檔案的限制與下一步是什麼？", en: "What are the archive's limits and next steps?" },
+  { zh: "圖片管理系統如何完成掃碼登入？", en: "How does the image system implement QR login?" },
+  { zh: "四人團隊中我負責哪些工作？", en: "What did I own in the four-person team?" },
 ];
 
 export type ChatSource = { title: Bilingual; detail: Bilingual; type: "project" | "archive" | "system" };
@@ -366,5 +458,13 @@ export const chatAnswers: ChatAnswer[] = [
   {
     text: { zh: "目前頁面是前端 Mock：回答來自靜態檔案與本地範例，逐字輸出由瀏覽器計時器模擬，不連線到任何後端服務。檔案後續會補入可公開引用的專案資料，並繼續驗證從模擬到真實環境、複雜戶外場景與多機協同的遷移邊界。", en: "This page is a front-end mock: answers come from static records and local samples, with token streaming simulated by a browser timer. It does not connect to a back-end service. Next steps are to add public, citable project records and further validate transfer from simulation to real environments, complex outdoor scenes, and multi-agent coordination." },
     sources: [{ title: { zh: "目前限制與後續驗證", en: "Limitations & outlook" }, detail: { zh: "論文第 5 章 · 從模擬到真實與邊緣部署", en: "Thesis chapter 5 · simulation-to-real and edge deployment" }, type: "system" }],
+  },
+  {
+    text: { zh: "掃碼登入由 Web、移動端與服務端共同完成。Web 端先取得隨機字串並產生二維碼，移動端掃描後提交字串與使用者資訊，服務端完成配對與身分檢查，再把登入結果交回 Web 端；登入狀態同時支援 7 天持久化鑑權。", en: "QR login spans the web client, mobile client, and server. The web client requests a random string and presents it as a QR code; mobile submits the scanned string with user information; the server matches and validates the request before returning the login result. The session also supports seven-day persistence." },
+    sources: [{ title: { zh: "掃碼登入與持久化鑑權", en: "QR login and persistent authentication" }, detail: { zh: "圖片管理系統答辯簡報／個人履歷", en: "Image management presentation / personal resume" }, type: "project" }],
+  },
+  {
+    text: { zh: "這是四人團隊專案，我的角色是後端開發。我負責掃碼與持久化登入、阿里雲 OSS 與敏感資訊過濾，並使用 GitLab／Git Flow 協作，編寫 Dockerfile 完成容器化部署；PC 與 Android 端等團隊交付不會全部歸為我的個人成果。", en: "This was a four-person team project and my role was backend development. I owned QR and persistent login, Alibaba Cloud OSS and sensitive-content filtering, GitLab / Git Flow collaboration, and the Dockerfile-based deployment. The team's PC and Android delivery is not presented as entirely my individual work." },
+    sources: [{ title: { zh: "團隊角色與主要工作", en: "Team role and primary contributions" }, detail: { zh: "個人履歷 · 圖片管理系統", en: "Personal resume · Image Management System" }, type: "archive" }],
   },
 ];

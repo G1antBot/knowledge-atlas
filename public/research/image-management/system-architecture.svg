@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="860" viewBox="0 0 1440 860" role="img" aria-labelledby="title desc">
+  <title id="title">圖片管理系統跨端架構</title>
+  <desc id="desc">PC 與 Android 經由 Spring Boot 服務存取 MySQL 和阿里雲 OSS，圖中標示個人負責範圍。</desc>
+  <rect width="1440" height="860" fill="#F2EFE6"/>
+  <g stroke="#D4D0C5" stroke-width="1">
+    <path d="M64 0V860M256 0V860M448 0V860M640 0V860M832 0V860M1024 0V860M1216 0V860M1408 0V860"/>
+    <path d="M0 120H1440M0 312H1440M0 504H1440M0 696H1440"/>
+  </g>
+  <g font-family="Arial Narrow, Noto Sans TC, sans-serif" fill="#0C0C0C">
+    <text x="64" y="66" fill="#1D4ED8" font-size="24" font-weight="700">02 / SYSTEM MAP</text>
+    <text x="64" y="112" font-size="46" font-weight="800">圖片、身分與儲存之間的跨端路徑</text>
+    <text x="64" y="154" font-size="18">四人團隊專案 · 2024.11—2025.02</text>
+
+    <text x="64" y="226" font-size="16" font-weight="700">CLIENTS</text>
+    <rect x="64" y="250" width="310" height="144" fill="#0C0C0C"/>
+    <text x="88" y="294" fill="#F2EFE6" font-size="28" font-weight="700">PC / WEB</text>
+    <text x="88" y="330" fill="#F2EFE6" font-size="17">Vue 3 · Element Plus</text>
+    <text x="88" y="360" fill="#F2EFE6" font-size="17">Vuex · Axios</text>
+    <rect x="402" y="250" width="310" height="144" fill="#0C0C0C"/>
+    <text x="426" y="294" fill="#F2EFE6" font-size="28" font-weight="700">ANDROID</text>
+    <text x="426" y="330" fill="#F2EFE6" font-size="17">登入 · 相簿 · 圖片編輯</text>
+    <text x="426" y="360" fill="#F2EFE6" font-size="17">掃碼 · 定位</text>
+
+    <text x="804" y="226" font-size="16" font-weight="700">SERVICE</text>
+    <rect x="804" y="250" width="572" height="144" fill="#1D4ED8"/>
+    <text x="830" y="294" fill="#FFFFFF" font-size="28" font-weight="700">SPRING BOOT</text>
+    <text x="830" y="330" fill="#FFFFFF" font-size="17">Controller → Service → Mapper</text>
+    <text x="830" y="360" fill="#FFFFFF" font-size="17">登入 · 圖片 · 相簿 · 內容審核</text>
+
+    <path d="M219 394V430H1012V412" fill="none" stroke="#FF3B30" stroke-width="4"/>
+    <path d="M557 394V430" fill="none" stroke="#FF3B30" stroke-width="4"/>
+    <path d="M1002 414L1012 396L1022 414Z" fill="#FF3B30"/>
+
+    <text x="64" y="488" font-size="16" font-weight="700">DATA &amp; OBJECTS</text>
+    <rect x="64" y="516" width="648" height="126" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2"/>
+    <text x="88" y="560" font-size="28" font-weight="700">MYSQL</text>
+    <text x="88" y="598" font-size="17">user / image / album / 檔案位置</text>
+    <rect x="804" y="516" width="572" height="126" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2"/>
+    <text x="830" y="560" font-size="28" font-weight="700">ALIBABA CLOUD OSS</text>
+    <text x="830" y="598" font-size="17">圖片物件 · 分片上傳 · 靜態資源</text>
+    <path d="M1012 394V496H388V506" fill="none" stroke="#0C0C0C" stroke-width="3"/>
+    <path d="M388 498L378 516H398Z" fill="#0C0C0C"/>
+    <path d="M1134 394V506" stroke="#0C0C0C" stroke-width="3"/>
+    <path d="M1134 498L1124 516H1144Z" fill="#0C0C0C"/>
+
+    <rect x="64" y="704" width="1312" height="92" fill="#FF3B30"/>
+    <text x="88" y="742" fill="#FFFFFF" font-size="16" font-weight="700">MY SCOPE / 個人負責</text>
+    <text x="88" y="774" fill="#FFFFFF" font-size="22" font-weight="700">掃碼與持久化登入　／　OSS 與內容過濾　／　GitLab 協作　／　Docker 部署</text>
+  </g>
+</svg>

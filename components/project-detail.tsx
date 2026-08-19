@@ -17,7 +17,8 @@ function SourceList({ sources }: { sources: ProjectArchive["sources"] }) {
 function FigureGrid({ figures }: { figures: ArchiveFigure[] }) {
   const { locale } = useLocale();
   const sequence = figures.every((figure) => figure.format === "sequence");
-  return <div className={`archive-figure-grid figure-count-${figures.length} ${sequence ? "figure-sequence" : ""}`}>{figures.map((figure) => <figure className={`archive-figure figure-${figure.format ?? "wide"}`} key={figure.path}>
+  const portrait = figures.every((figure) => figure.format === "portrait");
+  return <div className={`archive-figure-grid figure-count-${figures.length} ${sequence ? "figure-sequence" : ""} ${portrait ? "figure-portrait-set" : ""}`}>{figures.map((figure) => <figure className={`archive-figure figure-${figure.format ?? "wide"}`} key={figure.path}>
     <div className="archive-figure-image"><img src={figure.path} alt={t(figure.alt, locale)} loading="lazy" decoding="async" /></div>
     <figcaption>{t(figure.caption, locale)}</figcaption>
   </figure>)}</div>;
@@ -35,7 +36,7 @@ function ArchiveSectionView({ section, index }: { section: ArchiveSection; index
 export function ProjectDetail({ project }: { project: ProjectArchive }) {
   const { locale } = useLocale();
   const zh = locale === "zh";
-  const isPrimary = project.status === "primary";
+  const hasCompleteArchive = project.sections.length > 0;
 
   return <div className="page-frame project-editorial">
     <section className="project-editorial-hero">
@@ -44,7 +45,7 @@ export function ProjectDetail({ project }: { project: ProjectArchive }) {
       <div className="project-hero-summary"><p>{t(project.summary, locale)}</p><div className="project-hero-tags">{project.tags.map((tag) => <span className="tag" key={tag}>{tag}</span>)}</div></div>
     </section>
 
-    {isPrimary ? <>
+    {hasCompleteArchive ? <>
       <ArchiveDirectory sections={project.sections} hasMedia={Boolean(project.media?.length)} locale={locale} />
       <article className="editorial-article">{project.sections.map((section, index) => <ArchiveSectionView key={section.id} section={section} index={index} />)}
         {project.media && <section className="editorial-section editorial-media" id="media"><div className="editorial-section-index"><span>{String(project.sections.length + 1).padStart(2, "0")}</span><small>media / record</small></div><div className="editorial-section-copy"><h2>{zh ? "媒體記錄" : "Media record"}</h2><p>{zh ? "四段畫面依序記下自主起飛、視覺對準、平順逼近與終端穿越。預設先顯示靜態縮圖，點擊後再載入 GIF。" : "Four clips record takeoff, visual alignment, smooth approach, and terminal traversal in sequence. Static posters appear first; GIFs load on demand."}</p></div><div className="editorial-section-figures"><MediaStrip assets={project.media} /></div></section>}
