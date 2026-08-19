@@ -71,7 +71,7 @@ export function ArchiveCommandLauncher({ projects }: { projects: ProjectArchive[
       aria-controls="archive-command-dialog"
     >
       <span aria-hidden="true" style={{ color: "var(--blue)", fontSize: 15 }}>⌕</span>
-      <span>{zh ? "搜索档案" : "Search archive"}</span>
+      <span>{zh ? "搜尋檔案" : "Search archive"}</span>
       <span style={keyStyle}>⌘ / Ctrl K</span>
     </button>
     {activated && <ArchiveCommand projects={projects} open={open} onOpenChange={setOpen} />}

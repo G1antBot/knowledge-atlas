@@ -45,27 +45,36 @@ export function AskInterface() {
   }
 
   function clearConversation() { stopStream(); setMessages([]); setError(null); setFeedback(null); }
-  function copyAnswer(text: string) { void navigator.clipboard?.writeText(text); setFeedback(zh ? "已复制" : "Copied"); }
+  async function copyAnswer(text: string) {
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard API unavailable");
+      await navigator.clipboard.writeText(text);
+      setFeedback(zh ? "已複製" : "Copied");
+    } catch {
+      setFeedback(zh ? "複製失敗，請手動選取文字" : "Copy failed. Select the text manually.");
+    }
+  }
 
   return <div className="ask-layout">
-    <section className="ask-console" aria-label={zh ? "AI 知识系统模拟问答" : "AI knowledge system mock chat"}>
+    <section className="ask-console" aria-label={zh ? "AI 知識系統模擬問答" : "AI knowledge system mock chat"}>
       <div className="console-bar"><span>ASK / STATIC MOCK CHANNEL</span><span className="console-status"><i className={`status-dot ${streaming ? "live" : ""}`} />{streaming ? "STREAMING" : "READY"}</span></div>
-      <div className="conversation" aria-live="polite">
-        <p className="console-disclaimer">{zh ? "前端 Mock：非实时回答，不接入外部服务" : "Front-end mock: no live answer or external service connection."}</p>
-        {messages.length === 0 && <p className="console-intro">{zh ? "输入问题，系统会从静态项目档案中选取回答，并模拟逐字流式输出。建议问题围绕系统设计、资料来源和项目证据。" : "Ask a question. The system selects from static project records and simulates token streaming. Suggested questions focus on system design, source records, and project evidence."}</p>}
+      <div className="conversation">
+        <div className="sr-only" role="status" aria-live="polite">{streaming ? (zh ? "正在產生回答" : "Generating answer") : messages.some((message) => message.role === "assistant" && message.text) ? (zh ? "回答已完成" : "Answer complete") : ""}</div>
+        <p className="console-disclaimer">{zh ? "前端 Mock：非即時回答，不連接外部服務" : "Front-end mock: no live answer or external service connection."}</p>
+        {messages.length === 0 && <p className="console-intro">{zh ? "可以詢問架構、控制流程、資料來源，或某項設計為何這樣安排。回答會引用對應的專案章節。" : "Ask about the architecture, control flow, sources, or why a design choice was made. Answers cite the relevant project sections."}</p>}
         {messages.map((message, index) => <div className="message" key={`${message.role}-${index}`}>
-          <div className="message-label">{message.role === "user" ? (zh ? "YOU / 访客" : "YOU / Visitor") : (zh ? "ATLAS / 静态档案" : "ATLAS / Static archive")}</div>
+          <div className="message-label">{message.role === "user" ? (zh ? "YOU / 訪客" : "YOU / Visitor") : (zh ? "ATLAS / 靜態檔案" : "ATLAS / Static archive")}</div>
           <div className={message.role === "user" ? "message-user" : "message-assistant"}>{message.text}{message.role === "assistant" && streaming && index === messages.length - 1 && <span className="cursor" />}</div>
-          {message.role === "assistant" && !streaming && message.text && <div className="feedback-row"><button className="tiny-action" type="button" onClick={() => copyAnswer(message.text)}>{zh ? "复制回答" : "Copy"}</button><button className="tiny-action" type="button" onClick={() => setFeedback(zh ? "感谢反馈" : "Thanks")}>{zh ? "有帮助" : "Helpful"}</button><button className="tiny-action" type="button" onClick={() => setFeedback(zh ? "已记录" : "Noted")}>{zh ? "需修正" : "Needs correction"}</button></div>}
+          {message.role === "assistant" && !streaming && message.text && <div className="feedback-row"><button className="tiny-action" type="button" onClick={() => void copyAnswer(message.text)}>{zh ? "複製回答" : "Copy"}</button><button className="tiny-action" type="button" onClick={() => setFeedback(zh ? "感謝回饋" : "Thanks")}>{zh ? "有幫助" : "Helpful"}</button><button className="tiny-action" type="button" onClick={() => setFeedback(zh ? "已記錄" : "Noted")}>{zh ? "需修正" : "Needs correction"}</button></div>}
         </div>)}
         {streaming && <button className="tiny-action" type="button" onClick={stopStream}>{zh ? "停止生成" : "Stop"}</button>}
-        {error && <div className="console-error">{error === "rate-limit" ? (zh ? "429 / RATE_LIMIT — 当前演示额度已用尽，请稍后再试。" : "429 / RATE_LIMIT — Demo quota is exhausted. Try again later.") : (zh ? "500 / MOCK_ERROR — 模拟知识索引暂时不可用。" : "500 / MOCK_ERROR — Mock knowledge index is unavailable.")}</div>}
+        {error && <div className="console-error">{error === "rate-limit" ? (zh ? "429 / RATE_LIMIT — 目前示範額度已用盡，請稍後再試。" : "429 / RATE_LIMIT — Demo quota is exhausted. Try again later.") : (zh ? "500 / MOCK_ERROR — 模擬知識索引暫時無法使用。" : "500 / MOCK_ERROR — Mock knowledge index is unavailable.")}</div>}
         {feedback && <div className="message-label">{feedback}</div>}
       </div>
-      <form className="console-controls" onSubmit={(event) => { event.preventDefault(); submit(); }}><textarea className="console-input" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder={zh ? "输入问题 / Ask a question..." : "Ask a question..."} aria-label={zh ? "输入问题" : "Question input"} rows={2} disabled={streaming} /><button className="console-button" type="submit" disabled={streaming || !question.trim()}>{zh ? "发送" : "Send"}</button><button className="console-button secondary" type="button" onClick={clearConversation}>{zh ? "清空" : "Clear"}</button></form>
+      <form className="console-controls" onSubmit={(event) => { event.preventDefault(); submit(); }}><textarea className="console-input" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder={zh ? "輸入問題 / Ask a question..." : "Ask a question..."} aria-label={zh ? "輸入問題" : "Question input"} rows={2} disabled={streaming} /><button className="console-button" type="submit" disabled={streaming || !question.trim()}>{zh ? "送出" : "Send"}</button><button className="console-button secondary" type="button" onClick={clearConversation}>{zh ? "清空" : "Clear"}</button></form>
     </section>
     <aside>
-      <div className="question-bank"><h2>{zh ? "建议问题" : "Suggested questions"}</h2><p>{zh ? "从这些入口开始，查看回答如何引用项目档案。" : "Start with an entry point and see how the answer cites the project archive."}</p><div className="question-list">{recommendedQuestions.map((item) => <button className="question-button" type="button" key={item.zh} onClick={() => submit(t(item, locale))} disabled={streaming}>{t(item, locale)}<span className="arrow">↗</span></button>)}</div></div>
+      <div className="question-bank"><h2>{zh ? "可以從這些問題開始" : "Questions to start with"}</h2><p>{zh ? "每個回答都會附上對應的檔案章節。" : "Each answer includes the archive section it comes from."}</p><div className="question-list">{recommendedQuestions.map((item) => <button className="question-button" type="button" key={item.zh} onClick={() => submit(t(item, locale))} disabled={streaming}>{t(item, locale)}<span className="arrow">↗</span></button>)}</div></div>
       {messages.some((message) => message.role === "assistant" && message.text) && <div className="source-cards"><h2>{zh ? "回答引用 / Sources" : "Sources / 回答引用"}</h2>{messages.filter((message) => message.role === "assistant").slice(-1).flatMap((message) => message.sources ?? []).map((source, index) => <div className="source-card" key={`${source.title.zh}-${index}`}><span>{source.type.toUpperCase()} / SOURCE {String(index + 1).padStart(2, "0")}</span><strong>{t(source.title, locale)}</strong><span>{t(source.detail, locale)}</span></div>)}</div>}
       {chatAnswers.length > 0 && <p className="coord" style={{ marginTop: 28 }}>MOCK INDEX / {chatAnswers.length} ANSWER PATTERNS / NO EXTERNAL SERVICE</p>}
     </aside>

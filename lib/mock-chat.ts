@@ -4,20 +4,21 @@ export type MockChatResult = ChatAnswer & { answerIndex: number };
 
 export function mockAnswer(question: string): MockChatResult {
   const normalized = question.toLowerCase();
-  const answerIndex = normalized.includes("混合路由") || normalized.includes("规则还是模型") || normalized.includes("hybrid routing") || normalized.includes("rules versus") ? 1
-    : normalized.includes("看门狗") || normalized.includes("急停") || normalized.includes("watchdog") || normalized.includes("emergency stop") ? 2
-    : normalized.includes("安全") || normalized.includes("边界") || normalized.includes("safety") || normalized.includes("boundary") ? 3
-    : normalized.includes("yoloe") || normalized.includes("感知") || normalized.includes("observation") || normalized.includes("perception") ? 4
-    : normalized.includes("视觉伺服") || normalized.includes("对准") || normalized.includes("逼近") || normalized.includes("visual servo") || normalized.includes("alignment") || normalized.includes("approach") ? 5
-    : normalized.includes("strike") || normalized.includes("终端穿越") || normalized.includes("terminal traverse") ? 6
-    : normalized.includes("限制") || normalized.includes("下一步") || normalized.includes("来源") || normalized.includes("mock") || normalized.includes("后端") || normalized.includes("limits") || normalized.includes("next step") || normalized.includes("source") || normalized.includes("backend") ? 7
-    : normalized.includes("无人机") || normalized.includes("uav") || normalized.includes("大模型") || normalized.includes("language model") || normalized.includes("高层决策") ? 0
+  const includesAny = (...terms: string[]) => terms.some((term) => normalized.includes(term));
+  const answerIndex = includesAny("混合路由", "规则还是模型", "規則還是模型", "規則或模型", "hybrid routing", "rules versus") ? 1
+    : includesAny("看门狗", "看門狗", "急停", "watchdog", "emergency stop") ? 2
+    : includesAny("安全", "边界", "邊界", "safety", "boundary") ? 3
+    : includesAny("yoloe", "感知", "observation", "perception") ? 4
+    : includesAny("视觉伺服", "視覺伺服", "对准", "對準", "逼近", "visual servo", "alignment", "approach") ? 5
+    : includesAny("strike", "终端穿越", "終端穿越", "terminal traverse") ? 6
+    : includesAny("限制", "下一步", "来源", "來源", "mock", "后端", "後端", "limits", "next step", "source", "backend") ? 7
+    : includesAny("无人机", "無人機", "uav", "大模型", "大型語言模型", "language model", "高层决策", "高層決策") ? 0
     : question.length % chatAnswers.length;
   return { ...chatAnswers[answerIndex], answerIndex };
 }
 
 export function mockFailure(question: string): "rate-limit" | "error" | null {
   if (question.toLowerCase().includes("限流") || question.toLowerCase().includes("rate")) return "rate-limit";
-  if (question.toLowerCase().includes("错误") || question.toLowerCase().includes("error")) return "error";
+  if (question.toLowerCase().includes("错误") || question.toLowerCase().includes("錯誤") || question.toLowerCase().includes("error")) return "error";
   return null;
 }

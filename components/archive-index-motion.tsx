@@ -43,7 +43,7 @@ export function ArchiveIndexMotion({ projects, id }: ArchiveIndexMotionProps) {
 
   return <div className="swiss-archive-motion" id={id} ref={indexRef}>
     {!reducedMotion && <ArchiveProgress target={indexRef} />}
-    <div className="swiss-archive-grid" role="list" aria-label={zh ? "项目档案" : "Project archive"}>
+    <div className="swiss-archive-grid" role="list" aria-label={zh ? "專案檔案" : "Project archive"}>
       {projects.map((project, index) => <motion.div
         className="swiss-archive-motion-item"
         custom={index}
@@ -64,7 +64,7 @@ export function ArchiveIndexMotion({ projects, id }: ArchiveIndexMotionProps) {
           <div className="swiss-card-meta">
             <span>{project.period}</span>
             <span>{project.tags.slice(0, 3).join(" · ")}</span>
-            <span className="swiss-card-open">{zh ? "打开档案" : "Open record"} <Arrow /></span>
+            <span className="swiss-card-open">{zh ? "開啟檔案" : "Open record"} <Arrow /></span>
           </div>
         </Link>
       </motion.div>)}

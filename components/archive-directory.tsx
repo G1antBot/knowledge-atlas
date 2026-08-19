@@ -15,7 +15,7 @@ export type ArchiveDirectoryProps = {
   locale: Locale;
 };
 
-const mediaTitle: Bilingual = { zh: "媒体记录", en: "Media record" };
+const mediaTitle: Bilingual = { zh: "媒體記錄", en: "Media record" };
 
 export function ArchiveDirectory({ sections, hasMedia, locale }: ArchiveDirectoryProps) {
   const zh = locale === "zh";
@@ -60,16 +60,16 @@ export function ArchiveDirectory({ sections, hasMedia, locale }: ArchiveDirector
   const activeIndex = Math.max(0, items.findIndex((item) => item.id === activeId));
   const currentStep = items.length ? activeIndex + 1 : 0;
   const progress = items.length ? currentStep / items.length : 0;
-  const directoryLabel = zh ? "目录" : "Contents";
-  const directoryDescription = zh ? "此档案暂无章节目录。" : "This archive has no section index yet.";
+  const directoryLabel = zh ? "目錄" : "Contents";
+  const directoryDescription = zh ? "此檔案目前沒有章節目錄。" : "This archive has no section index yet.";
 
   return <aside
     className={`project-jumpbar archive-directory${items.length ? "" : " archive-directory-empty"}`}
-    aria-label={zh ? "项目详情目录" : "Project detail contents"}
+    aria-label={zh ? "專案詳情目錄" : "Project detail contents"}
   >
     <span className="archive-directory-label">{directoryLabel}</span>
     {items.length ? <>
-      <nav className="archive-directory-nav" aria-label={zh ? "项目章节" : "Project sections"}>
+      <nav className="archive-directory-nav" aria-label={zh ? "專案章節" : "Project sections"}>
         {items.map((item, index) => {
           const isActive = item.id === activeId;
           return <a
@@ -86,7 +86,7 @@ export function ArchiveDirectory({ sections, hasMedia, locale }: ArchiveDirector
       <div
         className="archive-directory-progress"
         role="progressbar"
-        aria-label={zh ? "目录阅读进度" : "Directory reading progress"}
+        aria-label={zh ? "目錄閱讀進度" : "Directory reading progress"}
         aria-valuemin={0}
         aria-valuemax={items.length}
         aria-valuenow={currentStep}

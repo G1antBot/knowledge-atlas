@@ -38,9 +38,9 @@ export function ArchiveRelations({ project, projects }: { project: ProjectArchiv
 
   return <section className="archive-relations" aria-labelledby="archive-relations-heading">
     <div className="archive-relations-heading">
-      <Eyebrow>{zh ? "关系索引 / Backlinks" : "Relation index / Backlinks"}</Eyebrow>
-      <h2 id="archive-relations-heading">{zh ? "从来源返回章节，从章节继续探索。" : "Return from sources to sections, then keep exploring."}</h2>
-      <p>{zh ? "这组连接由当前档案的章节引用自动生成，不额外推断项目事实。" : "These links are generated from section citations in this record without inferring new project facts."}</p>
+      <Eyebrow>{zh ? "章節與來源 / Backlinks" : "Sections and sources / Backlinks"}</Eyebrow>
+      <h2 id="archive-relations-heading">{zh ? "哪些章節引用了哪些資料" : "Which sections cite which sources"}</h2>
+      <p>{zh ? "以下連結依照這份檔案現有的引用關係整理，點擊章節即可回到正文。" : "These links follow the citations already present in this record. Select a section to return to the text."}</p>
     </div>
 
     <div className="source-backlink-grid">
@@ -52,7 +52,7 @@ export function ArchiveRelations({ project, projects }: { project: ProjectArchiv
     </div>
 
     {neighbours.length > 0 && <div className="archive-neighbours">
-      <span className="archive-neighbours-label">{zh ? "档案网络" : "Archive network"}</span>
+      <span className="archive-neighbours-label">{zh ? "檔案網絡" : "Archive network"}</span>
       {neighbours.map((item) => <Link href={`/projects/${item.slug}`} key={item.slug}>
         <span>{item.index}</span><b>{t(item.title, locale)}</b><small>{item.status}</small><Arrow />
       </Link>)}

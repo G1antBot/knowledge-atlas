@@ -85,7 +85,7 @@ export function ArchiveCommand({ projects, open, onOpenChange }: ArchiveCommandP
     <Command.Dialog
       open={open}
       onOpenChange={onOpenChange}
-      label={zh ? "全局档案搜索" : "Global archive search"}
+      label={zh ? "全域檔案搜尋" : "Global archive search"}
       shouldFilter={false}
       loop
       id="archive-command-dialog"
@@ -95,8 +95,8 @@ export function ArchiveCommand({ projects, open, onOpenChange }: ArchiveCommandP
       style={dialogStyle}
     >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 18px 10px", borderBottom: "1px solid var(--line)" }}>
-                <span id="archive-command-title" style={{ color: "var(--blue)", font: '11px "Courier New", monospace', letterSpacing: ".1em" }}>{zh ? "全局档案 / SEARCH" : "GLOBAL ARCHIVE / SEARCH"}</span>
-                <button type="button" onClick={close} aria-label={zh ? "关闭搜索" : "Close search"} style={{ ...keyStyle, background: "transparent", cursor: "pointer" }}>ESC</button>
+                <span id="archive-command-title" style={{ color: "var(--blue)", font: '11px "Courier New", monospace', letterSpacing: ".1em" }}>{zh ? "全域檔案 / SEARCH" : "GLOBAL ARCHIVE / SEARCH"}</span>
+                <button type="button" onClick={close} aria-label={zh ? "關閉搜尋" : "Close search"} style={{ ...keyStyle, background: "transparent", cursor: "pointer" }}>ESC</button>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderBottom: "1px solid var(--ink)" }}>
                 <span aria-hidden="true" style={{ color: "var(--red)", fontSize: 20 }}>⌕</span>
@@ -104,23 +104,23 @@ export function ArchiveCommand({ projects, open, onOpenChange }: ArchiveCommandP
                   autoFocus
                   value={query}
                   onValueChange={setQuery}
-                  placeholder={zh ? "输入标题、章节、标签或来源…" : "Search titles, sections, tags, or sources…"}
-                  aria-label={zh ? "搜索公开档案" : "Search public archive"}
-                  style={{ width: "100%", border: 0, outline: 0, background: "transparent", color: "var(--ink)", font: '16px/1.4 "Helvetica Neue", "Noto Sans SC", sans-serif' }}
+                  placeholder={zh ? "輸入標題、章節、標籤或來源…" : "Search titles, sections, tags, or sources…"}
+                  aria-label={zh ? "搜尋公開檔案" : "Search public archive"}
+                  style={{ width: "100%", border: 0, outline: 0, background: "transparent", color: "var(--ink)", font: '16px/1.4 "Helvetica Neue", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif' }}
                 />
               </div>
-              <Command.List label={zh ? "档案搜索结果" : "Archive search results"} style={{ maxHeight: "min(52vh, 440px)", overflowY: "auto", padding: "5px 0 9px" }}>
+              <Command.List label={zh ? "檔案搜尋結果" : "Archive search results"} style={{ maxHeight: "min(52vh, 440px)", overflowY: "auto", padding: "5px 0 9px" }}>
                 <div style={{ padding: "8px 18px 6px", color: "var(--muted)", font: '10px "Courier New", monospace', letterSpacing: ".08em" }}>
-                  {trimmedQuery ? (zh ? "匹配节点" : "MATCHED NODES") : (zh ? "建议入口" : "SUGGESTED ENTRIES")}
+                  {trimmedQuery ? (zh ? "符合節點" : "MATCHED NODES") : (zh ? "建議入口" : "SUGGESTED ENTRIES")}
                 </div>
                 {hits.map((hit) => <ResultItem key={hit.id} hit={hit} locale={locale} onSelect={close} />)}
                 <Command.Empty style={{ padding: "28px 18px", color: "var(--muted)", textAlign: "center" }}>
-                  {zh ? "没有匹配的公开档案。试试项目名、章节或标签。" : "No public archive matches. Try a project, section, or tag."}
+                  {zh ? "沒有符合的公開檔案。試試專案名稱、章節或標籤。" : "No public archive matches. Try a project, section, or tag."}
                 </Command.Empty>
               </Command.List>
               <div style={{ display: "flex", justifyContent: "space-between", gap: 16, padding: "10px 18px", borderTop: "1px solid var(--line)", color: "var(--muted)", font: '10px "Courier New", monospace' }}>
-                <span>{zh ? "↑↓ 选择 · Enter 打开" : "↑↓ select · Enter open"}</span>
-                <span>{zh ? "仅公开前端档案" : "Public frontend archive only"}</span>
+                <span>{zh ? "↑↓ 選擇 · Enter 開啟" : "↑↓ select · Enter open"}</span>
+                <span>{zh ? "僅限公開前端檔案" : "Public frontend archive only"}</span>
               </div>
     </Command.Dialog>
   );

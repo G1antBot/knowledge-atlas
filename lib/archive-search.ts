@@ -228,5 +228,5 @@ export function getArchiveSuggestions(index: ArchiveSearchIndex, limit = 6): Arc
 }
 
 export function getArchiveSourceLabel(hit: ArchiveSearchHit, locale: "zh" | "en"): string {
-  return hit.source[locale] || hit.sectionTitle?.[locale] || (locale === "zh" ? "项目档案" : "Project archive");
+  return hit.source[locale] || hit.sectionTitle?.[locale] || (locale === "zh" ? "專案檔案" : "Project archive");
 }
