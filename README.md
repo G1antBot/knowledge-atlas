@@ -54,6 +54,8 @@ Knowledge Atlas 把个人网站改造成一个可以持续整理和使用的知�
 - **克制动效**：Motion 只用于档案入场和阅读进度，并尊重 `prefers-reduced-motion`。
 - **双语界面**：核心导航与档案内容支持中文和英文切换。
 
+当前索引收录三份档案：无人机识别与控制研究、图片管理系统，以及 Knowledge Atlas 自身的产品档案。三份档案沿用同一套章节、来源和图例结构，但各自保留不同的证据边界。
+
 ## 内容如何流动
 
 ```mermaid
@@ -85,6 +87,18 @@ flowchart LR
 
 > [!NOTE]
 > 本项目中的 “strike” 仅指软件在环论文场景中的模拟目标控制与终端穿越任务，不描述现实伤害。
+
+## 项目档案：Knowledge Atlas
+
+Knowledge Atlas 也作为一份可检查的产品档案被收录。它说明项目优先的信息架构、结构化内容模型、本地检索、瑞士编辑风界面，以及当前实现与后续路线之间的边界。
+
+| 当前可验证 | 后续规划 |
+| --- | --- |
+| 结构化项目与章节节点 | 服务器端个人知识来源维护 |
+| Orama 浏览器内全文检索 | 向量检索与引用召回 |
+| 双语、响应式与低动态适配 | 由服务端保管凭证的模型回答 |
+
+项目档案只把仓库代码、README 和真实页面截图作为现阶段证据；尚未实现的能力会明确标记为规划中。
 
 ## 技术结构
 
@@ -126,10 +140,12 @@ npm.cmd start
 | `/` | 档案索引、Mock 问答与主题索引 |
 | `/projects` | 项目筛选与档案入口 |
 | `/projects/uav-recognition-strike-control` | 无人机研究主档案、图表与媒体 |
+| `/projects/image-management-system` | 图片管理系统的团队交付与个人分工 |
+| `/projects/knowledge-atlas` | Knowledge Atlas 的信息架构、检索与产品路线 |
 | `/ask` | 完整的静态问答演示 |
-| `/about` | 系统背景与待补充资料说明 |
+| `/about` | 个人背景、教育、实习与本科培养脉络 |
 
-`/profile` 与 `/metrics` 是兼容旧入口的重定向路由。
+`/profile`、`/metrics` 与旧的 `/projects/team-blog-platform` 是兼容旧入口的重定向路由。
 
 ## 仓库结构
 
@@ -138,7 +154,7 @@ app/                 Next.js 路由、页面与全局视觉系统
 components/          档案、目录、搜索、问答和媒体组件
 data/content.ts      双语项目、章节、来源和媒体数据
 lib/                 本地检索、国际化与 Mock 问答逻辑
-public/research/uav  论文图例和图表的网页派生资源
+public/research/     各项目档案的公开图例、截图与网页派生资源
 public/media/uav     软件在环演示与轻量 poster
 assets/readme/       GitHub README 的 SVG 与真实页面截图
 ```
@@ -150,11 +166,12 @@ assets/readme/       GitHub README 的 SVG 与真实页面截图
 | 可本地打开的 Next.js 前端 | 服务器端 Kimi API 代理 |
 | 浏览器内公开档案检索 | 向量知识库与检索增强生成 |
 | 静态 Mock 问答和引用入口 | 实时模型回答与流式服务端接口 |
-| UAV 论文档案及公开媒体 | 图片管理系统的完整项目资料 |
+| UAV、图片管理系统与 Knowledge Atlas 档案 | 两份既有档案的代表图重新筛选 |
 
 - 当前问答是前端 Mock，不连接外部 AI 服务。
 - API Key 不得写入客户端代码或提交到 Git；后续只能放在服务器环境变量中。
 - 首页不展示实验指标或个人能力评分，论文图表只在对应档案中出现。
+- 培养方案只用于说明本科课程范围，不代表成绩、排名或熟练度自评。
 - 视频/GIF 默认不在首页加载；进入项目档案后仍先显示 poster，点击才加载演示。
 - 当前仓库尚未声明开源许可证。
 

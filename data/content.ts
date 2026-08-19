@@ -4,8 +4,17 @@ export type Bilingual = { zh: string; en: string };
 
 export type SourceRef = {
   label: Bilingual;
-  kind: "thesis" | "readme" | "media" | "archive";
+  kind: "thesis" | "readme" | "media" | "archive" | "repository";
   note?: Bilingual;
+  href?: string;
+};
+
+export type CapabilityStatus = "implemented" | "planned";
+
+export type ArchiveCapability = {
+  title: Bilingual;
+  detail: Bilingual;
+  status: CapabilityStatus;
 };
 
 export type MediaAsset = {
@@ -32,8 +41,17 @@ export type ArchiveSection = {
   title: Bilingual;
   body: Bilingual;
   points?: Bilingual[];
+  capabilities?: ArchiveCapability[];
   figures?: ArchiveFigure[];
   sources: SourceRef[];
+};
+
+export type CurriculumGroup = {
+  index: string;
+  title: Bilingual;
+  summary: Bilingual;
+  courses: Bilingual[];
+  source: SourceRef;
 };
 
 export type ProjectArchive = {
@@ -66,6 +84,23 @@ const silReadme: SourceRef = { label: { zh: "SIL README · 系統概述與執行
 const silReadmeLlm: SourceRef = { label: { zh: "SIL README.LLM · 評測與安全說明", en: "SIL README.LLM · Evaluation and safety notes" }, kind: "readme" };
 const imageSystemDeck: SourceRef = { label: { zh: "圖片管理系統答辯簡報 · 系統設計與實作", en: "Image management system presentation · Design and implementation" }, kind: "archive" };
 const imageSystemResume: SourceRef = { label: { zh: "個人履歷 · 團隊角色與主要工作", en: "Personal resume · Team role and primary contributions" }, kind: "archive" };
+const knowledgeAtlasRepository: SourceRef = {
+  label: { zh: "Knowledge Atlas · 公開原始碼倉庫", en: "Knowledge Atlas · Public source repository" },
+  kind: "repository",
+  note: { zh: "Next.js 前端、結構化檔案與本地檢索實作", en: "Next.js front end, structured archives, and local retrieval" },
+  href: "https://github.com/G1antBot/knowledge-atlas",
+};
+const knowledgeAtlasReadme: SourceRef = {
+  label: { zh: "Knowledge Atlas README · 功能與邊界", en: "Knowledge Atlas README · Features and boundaries" },
+  kind: "readme",
+  note: { zh: "公開功能、技術結構與維護原則", en: "Public features, technical structure, and maintenance rules" },
+  href: "https://github.com/G1antBot/knowledge-atlas#readme",
+};
+const curriculumPlan: SourceRef = {
+  label: { zh: "計算機科學與技術專業培養方案 · 課程清單", en: "Computer Science and Technology curriculum · Course list" },
+  kind: "archive",
+  note: { zh: "用於說明本科培養範圍，不代表成績或能力排名", en: "Used to describe undergraduate curriculum coverage, not grades or capability ranking" },
+};
 
 export const mediaAssets: MediaAsset[] = [
   {
@@ -374,23 +409,151 @@ export const archiveProjects: ProjectArchive[] = [
     sources: [imageSystemDeck, imageSystemResume],
   },
   {
-    slug: "team-blog-platform",
+    slug: "knowledge-atlas",
     index: "03",
-    title: { zh: "個人／團隊部落格平台", en: "Personal / Team Blog Platform" },
-    subtitle: { zh: "次級內容系統入口，等待更完整的公開檔案。", en: "A secondary content-system entry, awaiting a fuller public archive." },
-    category: { zh: "專案檔案 · 次級", en: "Project archive · secondary" },
-    period: "Secondary archive",
+    title: { zh: "Knowledge Atlas", en: "Knowledge Atlas" },
+    subtitle: { zh: "把專案、論文、實驗與個人背景整理成可以持續閱讀的知識入口。", en: "A durable knowledge entry point for projects, papers, experiments, and personal context." },
+    category: { zh: "獨立專案 · 個人知識系統", en: "Independent project · Personal knowledge system" },
+    period: "2026—Present",
     status: "secondary",
     accent: "ink",
-    summary: { zh: "保留作為內容、權限與發布系統的次級索引，不擴寫尚未經資料核驗的事實。", en: "Kept as a secondary index for content, permissions, and publishing systems without inventing unverified facts." },
-    tags: ["Secondary", "Content system"],
-    sections: [],
-    sources: [{ label: { zh: "現有專案索引 · 待補檔", en: "Existing project index · archive pending" }, kind: "archive" }],
+    summary: { zh: "我把這個網站當成一個持續整理資料的介面。首頁先呈現專案檔案，詳情頁再把正文、圖表、來源與相關章節放回同一條閱讀路徑；本地檢索負責在公開內容之間建立入口，後續的伺服器端檢索與模型回答則保留在產品路線圖中。", en: "I use this site as an interface for continuously organizing material. Project archives come first, while detail pages keep writing, figures, sources, and related sections in one reading path. Local retrieval creates entry points across public content; server-side retrieval and model-generated answers remain on the product roadmap." },
+    tags: ["Next.js 16", "React 19", "TypeScript", "Orama", "cmdk", "Motion"],
+    sections: [
+      {
+        id: "purpose",
+        title: { zh: "持續使用的個人網站", en: "A personal site designed for continued use" },
+        body: { zh: "這個網站不以履歷摘要或能力評分作為首頁，而是讓專案檔案成為主要入口。訪客可以先讀一份專案，再沿著章節、來源與相關主題繼續查找；個人背景留在獨立頁面，與專案證據分開。", en: "The homepage does not begin with a resume summary or capability scores. Project archives are the main entry points. A visitor can start with one project, then continue through sections, sources, and related topics, while personal context remains on a separate page." },
+        points: [
+          { zh: "首頁只保留辨識檔案所需的名稱、摘要、狀態與主題。", en: "The homepage keeps only the names, summaries, states, and topics needed to identify each archive." },
+          { zh: "圖表、截圖和媒體回到它們所屬的專案章節。", en: "Figures, screenshots, and media stay inside the project sections they support." },
+        ],
+        sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+      },
+      {
+        id: "information-architecture",
+        title: { zh: "檔案與章節結構", en: "Archive and section structure" },
+        body: { zh: "每個專案由固定識別資訊、章節、來源、圖例與媒體組成。專案目錄在捲動時保留目前章節，來源回鏈則說明一份材料支援了哪些正文，讓內容可以從專案、章節或來源三個方向進入。", en: "Each project contains stable identity fields, sections, sources, figures, and media. The directory keeps the current section visible during reading, while source backlinks show which parts of the text each source supports. Content can be entered through projects, sections, or sources." },
+        figures: [{
+          path: "/research/knowledge-atlas/archive-directory.png",
+          alt: { zh: "檔案詳情頁的瑞士編輯風章節目錄", en: "Swiss editorial section directory on an archive page" },
+          caption: { zh: "章節目錄、閱讀進度與正文共用同一套穩定錨點。", en: "The directory, reading progress, and article body share the same stable anchors." },
+          format: "wide",
+        }],
+        sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+      },
+      {
+        id: "content-model",
+        title: { zh: "結構化內容與來源", en: "Structured content and sources" },
+        body: { zh: "公開內容集中為 TypeScript 結構化資料。專案、章節、圖片和來源各自保留穩定欄位，中英文內容共用同一個節點；頁面只讀取已經整理進公開資料模型的內容，不直接讀取本機論文、簡報或實驗目錄。", en: "Public content is kept as structured TypeScript data. Projects, sections, figures, and sources retain stable fields, while Chinese and English share the same node. Pages read only material deliberately added to the public model, never private thesis, presentation, or experiment folders directly." },
+        points: [
+          { zh: "來源標籤跟隨章節，不以模糊的專案描述代替引用。", en: "Source labels stay with sections instead of being replaced by vague project descriptions." },
+          { zh: "公開派生資源與原始材料分開保存。", en: "Public derivative assets remain separate from source material." },
+          { zh: "限制與尚未核驗的部分同樣保留在檔案中。", en: "Limits and unverified areas remain visible inside each archive." },
+        ],
+        sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+      },
+      {
+        id: "retrieval",
+        title: { zh: "本地檢索與錨點導航", en: "Local retrieval and anchor navigation" },
+        body: { zh: "Orama 在瀏覽器中索引專案、章節、標籤與來源，cmdk 提供鍵盤操作的搜尋面板。搜尋結果直接指向專案或具體章節，不需要先經過另一層分類頁；中文查找另外建立字元片段，補足英文分詞器對中文內容的限制。", en: "Orama indexes projects, sections, tags, and sources in the browser, while cmdk provides a keyboard-driven search panel. Results point directly to projects or section anchors. Character fragments supplement the English tokenizer when matching Chinese content." },
+        figures: [{
+          path: "/research/knowledge-atlas/archive-search.png",
+          alt: { zh: "Knowledge Atlas 檔案搜尋面板", en: "Knowledge Atlas archive search panel" },
+          caption: { zh: "搜尋結果保留檔案名稱、章節與來源，並直接跳轉到對應錨點。", en: "Results retain the archive, section, and source context and link directly to the matching anchor." },
+          format: "wide",
+        }],
+        sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+      },
+      {
+        id: "visual-system",
+        title: { zh: "瑞士編輯風介面", en: "Swiss editorial interface" },
+        body: { zh: "介面使用米白紙張色、黑色結構線、藍色索引與少量紅色狀態訊號。大字標題、非對稱網格和等寬標籤負責建立層級；動效集中在檔案入場、閱讀進度與狀態切換，並尊重低動態偏好。", en: "The interface uses a warm paper tone, black structural lines, blue indices, and limited red status signals. Large titles, asymmetric grids, and monospaced labels establish hierarchy. Motion is reserved for archive entry, reading progress, and state changes, with reduced-motion preferences respected." },
+        figures: [{
+          path: "/research/knowledge-atlas/mobile-home.png",
+          alt: { zh: "Knowledge Atlas 手機端首頁", en: "Knowledge Atlas mobile homepage" },
+          caption: { zh: "手機版保留檔案順序和索引層級，將多欄內容收束為單欄閱讀。", en: "The mobile layout preserves archive order and index hierarchy while collapsing multi-column content into a single reading flow." },
+          format: "portrait",
+        }],
+        sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+      },
+      {
+        id: "delivery-state",
+        title: { zh: "目前實作與產品路線", en: "Current implementation and product roadmap" },
+        body: { zh: "目前版本先固定公開檔案的結構、檢索方式與閱讀介面。下一階段再把個人背景、實習和更多專案整理為可更新的知識來源，並在伺服器端加入向量檢索和帶來源的模型回答；兩個階段在頁面中分開標示。", en: "The current version first stabilizes public archive structure, retrieval, and reading. A later stage can turn personal context, internships, and more projects into maintainable knowledge sources, then add server-side vector retrieval and source-aware model answers. The two stages remain visibly separated." },
+        capabilities: [
+          { title: { zh: "結構化專案檔案", en: "Structured project archives" }, detail: { zh: "專案、章節、來源、圖表與媒體使用穩定節點。", en: "Projects, sections, sources, figures, and media use stable nodes." }, status: "implemented" },
+          { title: { zh: "本地全文檢索", en: "Local full-text retrieval" }, detail: { zh: "在公開檔案中查找專案、章節、標籤和來源。", en: "Search projects, sections, tags, and sources across public archives." }, status: "implemented" },
+          { title: { zh: "雙語與響應式介面", en: "Bilingual responsive interface" }, detail: { zh: "中文與英文共用內容節點，桌面和手機保留一致層級。", en: "Chinese and English share content nodes across desktop and mobile layouts." }, status: "implemented" },
+          { title: { zh: "伺服器端知識檢索", en: "Server-side knowledge retrieval" }, detail: { zh: "把經過公開審核的個人資料寫入向量索引。", en: "Index publication-approved personal material in a vector store." }, status: "planned" },
+          { title: { zh: "帶來源的模型回答", en: "Source-aware model answers" }, detail: { zh: "由伺服器保管模型憑證，回答同時返回檔案章節。", en: "Keep model credentials on the server and return archive sections with answers." }, status: "planned" },
+        ],
+        sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+      },
+      {
+        id: "limits",
+        title: { zh: "目前邊界", en: "Current boundaries" },
+        body: { zh: "目前可以核驗的是前端程式、公開檔案、本地檢索與介面行為。網站尚未接入伺服器端個人知識庫，也沒有可公開的營運資料；後續功能只有在資料來源、隱私邊界和引用方式確認後才會加入。", en: "What can currently be verified is the front-end code, public archives, local retrieval, and interface behavior. The site is not yet connected to a server-side personal knowledge base and has no public operational data. Later features will be added only after sources, privacy boundaries, and citation behavior are defined." },
+        sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+      },
+    ],
+    sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
   },
 ];
 
 export const education = [
   { period: "2022.09—2026.06", school: { zh: "中南大學", en: "Central South University" }, detail: { zh: "計算機科學與技術學士 · 已畢業並取得學位 · 長沙", en: "BSc in Computer Science and Technology · Graduated with degree · Changsha" } },
+];
+
+export const curriculumGroups: CurriculumGroup[] = [
+  {
+    index: "01",
+    title: { zh: "程式設計與軟體工程", en: "Programming & software engineering" },
+    summary: { zh: "從程式設計、資料結構與演算法延伸到軟體工程和跨端應用實作。", en: "From programming, data structures, and algorithms to software engineering and cross-platform application work." },
+    courses: [
+      { zh: "C 語言程式設計", en: "C programming" },
+      { zh: "Java 語言與系統設計", en: "Java and system design" },
+      { zh: "資料結構與演算法", en: "Data structures and algorithms" },
+      { zh: "軟體工程", en: "Software engineering" },
+    ],
+    source: curriculumPlan,
+  },
+  {
+    index: "02",
+    title: { zh: "計算機系統與硬體", en: "Computer systems & hardware" },
+    summary: { zh: "課程覆蓋計算機組成、作業系統、網路、資料庫與嵌入式系統。", en: "The curriculum covers computer organization, operating systems, networks, databases, and embedded systems." },
+    courses: [
+      { zh: "計算機組成原理與組合語言", en: "Computer organization and assembly" },
+      { zh: "作業系統原理", en: "Operating systems" },
+      { zh: "計算機網路", en: "Computer networks" },
+      { zh: "嵌入式系統", en: "Embedded systems" },
+    ],
+    source: curriculumPlan,
+  },
+  {
+    index: "03",
+    title: { zh: "數學、資料與人工智慧", en: "Mathematics, data & AI" },
+    summary: { zh: "數學基礎與資料方法支援後續的人工智慧、圖像處理和資料分析課程。", en: "Mathematical foundations and data methods support later work in AI, image processing, and data analysis." },
+    courses: [
+      { zh: "離散數學", en: "Discrete mathematics" },
+      { zh: "機率論與數理統計", en: "Probability and statistics" },
+      { zh: "人工智慧", en: "Artificial intelligence" },
+      { zh: "數位影像處理", en: "Digital image processing" },
+    ],
+    source: curriculumPlan,
+  },
+  {
+    index: "04",
+    title: { zh: "實踐與專業發展", en: "Practice & professional development" },
+    summary: { zh: "程式設計實踐、專案系統實踐、專案實習與畢業論文構成培養方案中的實踐環節。", en: "Programming practice, project-system practice, project internship, and the graduation thesis form the practical component of the program." },
+    courses: [
+      { zh: "程式設計實踐", en: "Programming practice" },
+      { zh: "專案系統實踐", en: "Project-system practice" },
+      { zh: "專案頂崗實習", en: "Project internship" },
+      { zh: "畢業設計（論文）", en: "Graduation thesis" },
+    ],
+    source: curriculumPlan,
+  },
 ];
 
 export const internships = [
@@ -403,11 +566,11 @@ export const internships = [
 ];
 
 export const topicIndex: Bilingual[] = [
-  { zh: "四層系統架構", en: "Four-layer system architecture" },
-  { zh: "混合路由與看門狗", en: "Hybrid routing and watchdog" },
+  { zh: "大型語言模型與控制邊界", en: "Language models and control boundaries" },
   { zh: "感知與視覺伺服", en: "Perception and visual servoing" },
-  { zh: "安全防護邊界", en: "Safety boundaries" },
-  { zh: "實驗方法與限制", en: "Methods and limitations" },
+  { zh: "跨端系統與內容安全", en: "Cross-platform systems and content safety" },
+  { zh: "檔案資訊架構", en: "Archive information architecture" },
+  { zh: "來源追蹤與本地檢索", en: "Source tracing and local retrieval" },
 ];
 
 export const recommendedQuestions: Bilingual[] = [
@@ -421,6 +584,8 @@ export const recommendedQuestions: Bilingual[] = [
   { zh: "這份檔案的限制與下一步是什麼？", en: "What are the archive's limits and next steps?" },
   { zh: "圖片管理系統如何完成掃碼登入？", en: "How does the image system implement QR login?" },
   { zh: "四人團隊中我負責哪些工作？", en: "What did I own in the four-person team?" },
+  { zh: "Knowledge Atlas 如何組織專案與來源？", en: "How does Knowledge Atlas organize projects and sources?" },
+  { zh: "Knowledge Atlas 下一階段準備加入什麼？", en: "What is planned for the next stage of Knowledge Atlas?" },
 ];
 
 export type ChatSource = { title: Bilingual; detail: Bilingual; type: "project" | "archive" | "system" };
@@ -466,5 +631,13 @@ export const chatAnswers: ChatAnswer[] = [
   {
     text: { zh: "這是四人團隊專案，我的角色是後端開發。我負責掃碼與持久化登入、阿里雲 OSS 與敏感資訊過濾，並使用 GitLab／Git Flow 協作，編寫 Dockerfile 完成容器化部署；PC 與 Android 端等團隊交付不會全部歸為我的個人成果。", en: "This was a four-person team project and my role was backend development. I owned QR and persistent login, Alibaba Cloud OSS and sensitive-content filtering, GitLab / Git Flow collaboration, and the Dockerfile-based deployment. The team's PC and Android delivery is not presented as entirely my individual work." },
     sources: [{ title: { zh: "團隊角色與主要工作", en: "Team role and primary contributions" }, detail: { zh: "個人履歷 · 圖片管理系統", en: "Personal resume · Image Management System" }, type: "archive" }],
+  },
+  {
+    text: { zh: "Knowledge Atlas 以專案作為第一層入口。每個專案再拆成穩定章節，章節保留來源、圖表與媒體；本地搜尋同時索引專案、章節、標籤和來源，搜尋結果直接回到對應檔案或正文錨點。", en: "Knowledge Atlas uses projects as the first-level entry point. Each project is divided into stable sections that retain sources, figures, and media. Local search indexes projects, sections, tags, and sources, then returns directly to the relevant archive or text anchor." },
+    sources: [{ title: { zh: "檔案與章節結構", en: "Archive and section structure" }, detail: { zh: "Knowledge Atlas · 公開原始碼與 README", en: "Knowledge Atlas · public source and README" }, type: "project" }],
+  },
+  {
+    text: { zh: "下一階段會先整理經過公開審核的個人背景、實習與專案資料，再建立伺服器端向量檢索。模型憑證只保存在伺服器環境中，回答需要同時返回對應檔案章節；在資料來源與隱私邊界確認以前，這些功能維持規劃狀態。", en: "The next stage will first organize publication-approved personal context, internship, and project material, then add server-side vector retrieval. Model credentials will remain in the server environment, and answers must return matching archive sections. These features stay planned until sources and privacy boundaries are confirmed." },
+    sources: [{ title: { zh: "目前實作與產品路線", en: "Current implementation and product roadmap" }, detail: { zh: "Knowledge Atlas · 產品路線", en: "Knowledge Atlas · product roadmap" }, type: "system" }],
   },
 ];

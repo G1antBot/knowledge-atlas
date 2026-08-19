@@ -7,6 +7,8 @@ export function mockAnswer(question: string): MockChatResult {
   const includesAny = (...terms: string[]) => terms.some((term) => normalized.includes(term));
   const answerIndex = includesAny("扫码登录", "掃碼登入", "二维码登录", "二維碼登入", "qr login") ? 8
     : includesAny("四人团队", "四人團隊", "团队中", "團隊中", "负责哪些", "負責哪些", "four-person team", "team role") ? 9
+    : includesAny("knowledge atlas 下一", "下一阶段", "下一階段", "产品路线", "產品路線", "向量检索", "向量檢索", "vector retrieval", "product roadmap") ? 11
+    : includesAny("knowledge atlas", "个人知识系统", "個人知識系統", "组织项目", "組織專案", "项目与来源", "專案與來源", "organize projects", "archive structure") ? 10
     : includesAny("混合路由", "规则还是模型", "規則還是模型", "規則或模型", "hybrid routing", "rules versus") ? 1
     : includesAny("看门狗", "看門狗", "急停", "watchdog", "emergency stop") ? 2
     : includesAny("安全", "边界", "邊界", "safety", "boundary") ? 3

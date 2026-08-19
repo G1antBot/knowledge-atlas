@@ -11,7 +11,12 @@ import { Arrow, Coord, Eyebrow, SourceTag } from "@/components/ui";
 
 function SourceList({ sources }: { sources: ProjectArchive["sources"] }) {
   const { locale } = useLocale();
-  return <div className="source-list">{sources.map((source) => <div className="source-card" key={source.label.zh}><SourceTag>{source.kind.toUpperCase()} / {t(source.label, locale)}</SourceTag>{source.note && <p>{t(source.note, locale)}</p>}</div>)}</div>;
+  return <div className="source-list">{sources.map((source) => {
+    const content = <><SourceTag>{source.kind.toUpperCase()} / {t(source.label, locale)}</SourceTag>{source.note && <p>{t(source.note, locale)}</p>}</>;
+    return source.href
+      ? <a className="source-card source-card-link" href={source.href} target="_blank" rel="noreferrer" key={source.label.zh}>{content}<span aria-hidden="true">↗</span></a>
+      : <div className="source-card" key={source.label.zh}>{content}</div>;
+  })}</div>;
 }
 
 function FigureGrid({ figures }: { figures: ArchiveFigure[] }) {
@@ -26,9 +31,10 @@ function FigureGrid({ figures }: { figures: ArchiveFigure[] }) {
 
 function ArchiveSectionView({ section, index }: { section: ArchiveSection; index: number }) {
   const { locale } = useLocale();
+  const zh = locale === "zh";
   return <section className="editorial-section" id={section.id}>
     <div className="editorial-section-index"><span>{String(index + 1).padStart(2, "0")}</span><small>{section.id.replaceAll("-", " / ")}</small></div>
-    <div className="editorial-section-copy"><h2>{t(section.title, locale)}</h2><p>{t(section.body, locale)}</p>{section.points && <ul className="archive-points">{section.points.map((point) => <li key={point.zh}>{t(point, locale)}</li>)}</ul>}<div className="section-sources"><SourceList sources={section.sources} /></div></div>
+    <div className="editorial-section-copy"><h2>{t(section.title, locale)}</h2><p>{t(section.body, locale)}</p>{section.points && <ul className="archive-points">{section.points.map((point) => <li key={point.zh}>{t(point, locale)}</li>)}</ul>}{section.capabilities && <div className="capability-ledger">{section.capabilities.map((capability, capabilityIndex) => <article className={`capability-item is-${capability.status}`} key={capability.title.zh}><div className="capability-meta"><span>{String(capabilityIndex + 1).padStart(2, "0")}</span><b>{capability.status === "implemented" ? (zh ? "已實作" : "Implemented") : (zh ? "規劃中" : "Planned")}</b></div><h3>{t(capability.title, locale)}</h3><p>{t(capability.detail, locale)}</p></article>)}</div>}<div className="section-sources"><SourceList sources={section.sources} /></div></div>
     {section.figures && <div className="editorial-section-figures"><FigureGrid figures={section.figures} /></div>}
   </section>;
 }
