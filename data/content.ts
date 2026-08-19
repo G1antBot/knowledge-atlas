@@ -621,7 +621,7 @@ export const chatAnswers: ChatAnswer[] = [
     sources: [{ title: { zh: "終端穿越", en: "Terminal traverse" }, detail: { zh: "論文第 3 章／SIL README", en: "Thesis chapter 3 / SIL README" }, type: "project" }],
   },
   {
-    text: { zh: "目前頁面是前端 Mock：回答來自靜態檔案與本地範例，逐字輸出由瀏覽器計時器模擬，不連線到任何後端服務。檔案後續會補入可公開引用的專案資料，並繼續驗證從模擬到真實環境、複雜戶外場景與多機協同的遷移邊界。", en: "This page is a front-end mock: answers come from static records and local samples, with token streaming simulated by a browser timer. It does not connect to a back-end service. Next steps are to add public, citable project records and further validate transfer from simulation to real environments, complex outdoor scenes, and multi-agent coordination." },
+    text: { zh: "目前提問頁使用公開檔案與本地範例回覆，逐字輸出由瀏覽器計時器模擬，不連線到後端服務。檔案後續會補入可公開引用的專案資料，並繼續驗證從模擬到真實環境、複雜戶外場景與多機協同的遷移邊界。", en: "The question page currently answers from public records and local samples, with progressive output simulated by a browser timer. It does not connect to a back-end service. Next steps are to add public, citable project records and further validate transfer from simulation to real environments, complex outdoor scenes, and multi-agent coordination." },
     sources: [{ title: { zh: "目前限制與後續驗證", en: "Limitations & outlook" }, detail: { zh: "論文第 5 章 · 從模擬到真實與邊緣部署", en: "Thesis chapter 5 · simulation-to-real and edge deployment" }, type: "system" }],
   },
   {

@@ -16,9 +16,10 @@ function ShellContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { locale, toggleLocale } = useLocale();
   const [menuOpen, setMenuOpen] = useState(false);
+  const isAskRoute = pathname === "/ask";
   const menuLabel = locale === "zh" ? (menuOpen ? "關閉選單" : "開啟選單") : (menuOpen ? "Close menu" : "Open menu");
 
-  return <div className="site-root">
+  return <div className={`site-root ${isAskRoute ? "ask-route" : ""}`}>
     <header className="site-header">
       <Link className="wordmark" href="/" onClick={() => setMenuOpen(false)} aria-label="Knowledge Atlas home">
         <span className="wordmark-symbol">KA</span><span>KNOWLEDGE<br /><b>ATLAS</b></span>
