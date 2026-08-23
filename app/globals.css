@@ -484,7 +484,7 @@ main { background: var(--paper); color: var(--ink); padding-bottom: 110px; }
   .swiss-hero-note { grid-column: 2; max-width: 520px; }
   .swiss-archive-card { grid-template-columns: 72px minmax(0,1fr) 180px; }
   .editorial-section { grid-template-columns: 72px minmax(0,1fr); }
-  .editorial-section > .editorial-section-copy, .editorial-section:not(:has(> .editorial-section-figures)) > .editorial-section-copy { grid-column: 2; }
+  .editorial-section > .editorial-section-copy,
   .editorial-section > .editorial-section-figures { grid-column: 2; }
   .project-hero-grid, .project-hero-summary { grid-template-columns: 72px minmax(0,1fr); }
   .project-hero-summary > p { grid-column: 2; }
@@ -541,6 +541,7 @@ main { background: var(--paper); color: var(--ink); padding-bottom: 110px; }
   .editorial-section > .editorial-section-figures,
   .editorial-section.is-centered > .editorial-section-copy,
   .editorial-section.is-centered > .editorial-section-figures { grid-column: 1; max-width: none; }
+  .editorial-section > .editorial-section-figures { width: 100%; min-width: 0; }
   .archive-subsection { grid-template-columns: 1fr; gap: 18px; }
   .editorial-section > .editorial-section-media { grid-column: 1; }
   .archive-figure-grid, .archive-figure-grid.figure-sequence { grid-template-columns: 1fr; }
