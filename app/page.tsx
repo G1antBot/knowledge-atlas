@@ -21,7 +21,7 @@ export default function HomePage() {
       </div>
     </section>
 
-    <section className="section archive-first" aria-labelledby="archive-heading">
+    <section className="section archive-first home-reveal home-reveal-delay-1" aria-labelledby="archive-heading">
       <SectionHeading id="archive-heading" eyebrow={{ zh: "檔案索引 / 01", en: "Archive index / 01" }} title={{ zh: "從專案開始。", en: "Start with the projects." }} description={{ zh: "每份檔案都保留問題、取捨與證據；圖表和演示只放在它真正屬於的地方。", en: "Each record keeps the problem, trade-offs, and evidence together. Figures, charts, and media remain inside the record they belong to." }} locale={locale} />
       <ArchiveIndexMotion projects={archiveProjects} />
     </section>

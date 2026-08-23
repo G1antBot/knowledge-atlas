@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion, useScroll } from "motion/react";
-import { useRef, type RefObject } from "react";
+import { useRef, type CSSProperties, type RefObject } from "react";
 import type { ProjectArchive } from "@/data/content";
 import { useLocale } from "@/components/locale-context";
 import { t } from "@/lib/i18n";
@@ -47,11 +47,12 @@ export function ArchiveIndexMotion({ projects, id }: ArchiveIndexMotionProps) {
       {projects.map((project, index) => <motion.div
         className="swiss-archive-motion-item"
         custom={index}
-        initial={reducedMotion ? false : "hidden"}
+        initial={false}
         whileInView={reducedMotion ? undefined : "visible"}
         viewport={{ once: true, amount: 0.24 }}
         variants={cardVariants}
         role="listitem"
+        style={{ "--archive-index": index } as CSSProperties}
         key={project.slug}
       >
         <Link className={`swiss-archive-card swiss-archive-${project.status}`} href={`/projects/${project.slug}`}>

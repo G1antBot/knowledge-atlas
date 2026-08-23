@@ -188,3 +188,11 @@ assets/readme/       GitHub README 的 SVG 与真实页面截图
 <p align="center">
   <sub>Knowledge Atlas · source-aware frontend prototype · maintained as an evolving personal archive</sub>
 </p>
+
+## Current interaction model
+
+- Archive pages share one page-level reading indicator: a compact vertical track on precise-pointer desktop layouts and a 2px top track on smaller screens. The `/ask` workspace is intentionally excluded.
+- Project directories collapse to the active chapter on desktop. On small screens, the directory becomes an accessible bottom drawer with Escape handling, focus containment and scroll locking.
+- The UAV archive follows the eleven-part thesis presentation order. Its four software-in-the-loop clips belong to the autonomous execution and visual-servo chapter; “strike” remains a simulated target-control / terminal-traverse task.
+- Search indexes projects, chapters, nested subsections, figure captions and chapter media, then links to stable public anchors. Exact experiment metrics, raw logs, API keys and local source paths remain outside the public page.
+- `/ask` remains a browser-only timed mock and does not connect to Kimi or another external model.

@@ -7,6 +7,7 @@ import { archiveProjects, navItems } from "@/data/content";
 import { t } from "@/lib/i18n";
 import { LocaleProvider, useLocale } from "@/components/locale-context";
 import { ArchiveCommandLauncher } from "@/components/archive-command-launcher";
+import { DesktopCursor, ReadingProgress } from "@/components/site-chrome";
 
 export function SiteShell({ children }: { children: React.ReactNode }) {
   return <LocaleProvider><ShellContent>{children}</ShellContent></LocaleProvider>;
@@ -19,7 +20,8 @@ function ShellContent({ children }: { children: React.ReactNode }) {
   const isAskRoute = pathname === "/ask";
   const menuLabel = locale === "zh" ? (menuOpen ? "關閉選單" : "開啟選單") : (menuOpen ? "Close menu" : "Open menu");
 
-  return <div className={`site-root ${isAskRoute ? "ask-route" : ""}`}>
+  return <div className={`site-root ${isAskRoute ? "ask-route" : "content-route"}`}>
+    {!isAskRoute && <><ReadingProgress /><DesktopCursor /></>}
     <header className="site-header">
       <Link className="wordmark" href="/" onClick={() => setMenuOpen(false)} aria-label="Knowledge Atlas home">
         <span className="wordmark-symbol">KA</span><span>KNOWLEDGE<br /><b>ATLAS</b></span>

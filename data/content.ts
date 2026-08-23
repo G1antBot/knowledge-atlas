@@ -36,13 +36,28 @@ export type ArchiveFigure = {
   format?: "wide" | "square" | "sequence" | "portrait";
 };
 
-export type ArchiveSection = {
+export type ArchiveSubsection = {
   id: string;
   title: Bilingual;
   body: Bilingual;
   points?: Bilingual[];
   capabilities?: ArchiveCapability[];
   figures?: ArchiveFigure[];
+  sources?: SourceRef[];
+  anchors?: string[];
+};
+
+export type ArchiveSection = {
+  id: string;
+  layout?: "centered";
+  title: Bilingual;
+  body: Bilingual;
+  points?: Bilingual[];
+  capabilities?: ArchiveCapability[];
+  figures?: ArchiveFigure[];
+  subsections?: ArchiveSubsection[];
+  media?: MediaAsset[];
+  anchors?: string[];
   sources: SourceRef[];
 };
 
@@ -67,7 +82,6 @@ export type ProjectArchive = {
   tags: string[];
   sections: ArchiveSection[];
   sources: SourceRef[];
-  media?: MediaAsset[];
 };
 
 export const navItems = [
@@ -145,7 +159,7 @@ export const mediaAssets: MediaAsset[] = [
   },
 ];
 
-export const uavArchive: ProjectArchive = {
+const legacyUavArchive: ProjectArchive = {
   slug: "uav-recognition-strike-control",
   index: "01",
   title: { zh: "基於大模型的無人機識別打擊控制演算法", en: "LLM-Based UAV Recognition and Strike Control Algorithm" },
@@ -157,7 +171,6 @@ export const uavArchive: ProjectArchive = {
   summary: { zh: "在這個系統裡，我沒有讓大型語言模型直接接管飛行，而是把它放在高層意圖與策略的位置，再透過規則、視覺伺服、飛控與安全防護，把動作收束在可驗證的邊界內。這裡的 strike 指軟體在環（SIL）模擬場景中的目標控制／終端穿越任務，不描述現實傷害。", en: "The system does not hand flight directly to a language model. It places the model at the intent and strategy layer, then bounds execution through rules, visual servoing, the flight stack, and safety guards. Here, strike means a simulated target-control / terminal-traverse task in a software-in-the-loop scene." },
   tags: ["LLM", "YOLOE", "MAVLink / PX4", "RflySim", "SIL", "Visual servo"],
   sources: [thesisChapter3, thesisChapter4, thesisChapter5, silReadme, silReadmeLlm],
-  media: mediaAssets,
   sections: [
     {
       id: "abstract",
@@ -267,7 +280,7 @@ export const uavArchive: ProjectArchive = {
       sources: [thesisChapter3, silReadmeLlm],
     },
     {
-      id: "safety",
+      id: "safety-guards",
       title: { zh: "安全防護", en: "Safety guards" },
       body: { zh: "安全層以非侵入式方式包住飛控指令介面。它不預設上游永遠正確，而是重新檢查每個動作的速度、空間、高度與時間邊界；遇到越界或逾時，動作就會被拒絕，或降級為懸停。", en: "The safety layer wraps flight-command interfaces non-intrusively. It does not assume upstream correctness; every action is checked again against velocity, space, altitude, and time boundaries. A violation or timeout is rejected or downgraded to hover." },
       points: [
@@ -309,6 +322,126 @@ export const uavArchive: ProjectArchive = {
       title: { zh: "目前限制與後續驗證", en: "Limitations & outlook" },
       body: { zh: "目前能確認的證據主要來自室內模擬與有限的實體樣機聯調。開放式長鏈路指令、網路波動、複雜戶外遮蔽、感測器雜訊與多機協同仍需要更多驗證；後續可以再檢視邊緣側模型、主動視覺反思與多機任務協調。", en: "Current evidence is mainly from indoor simulation and limited physical-prototype integration. Open-ended long-horizon instructions, network variation, outdoor occlusion, sensor noise, and multi-agent coordination need more validation. Future work can explore edge-side models, active visual reflection, and multi-agent task coordination." },
       sources: [thesisChapter5],
+    },
+  ],
+};
+
+const legacyUavSections = legacyUavArchive.sections;
+const uavArchiveBase = legacyUavArchive;
+
+export const uavArchive: ProjectArchive = {
+  ...uavArchiveBase,
+  sections: [
+    {
+      ...legacyUavSections[0],
+      id: "industry-conflict",
+      title: { zh: "產業現況與核心矛盾", en: "Industry context & core contradiction" },
+      anchors: ["abstract"],
+    },
+    {
+      ...legacyUavSections[7],
+      id: "research-route",
+      title: { zh: "研究與設計路線", en: "Research and design route" },
+      body: { zh: "研究先從自然語言任務與飛行執行之間的落差出發，再以規則分流、視覺感知、分階段控制與安全檢查串起可觀察的驗證路線。網站保留方法、證據類型與限制；實驗數值仍放在原本的論文脈絡裡，不抽成首頁指標。", en: "The research starts from the gap between natural-language missions and flight execution, then connects rule-based routing, visual perception, staged control, and safety checks into an observable validation route. The site keeps methods, evidence types, and limits together, while experiment values remain in their original thesis context instead of becoming homepage metrics." },
+      points: undefined,
+      figures: undefined,
+      anchors: ["methods"],
+    },
+    {
+      ...legacyUavSections[1],
+      id: "architecture",
+      layout: "centered",
+      anchors: ["architecture"],
+      subsections: [
+        { ...legacyUavSections[2], anchors: ["hybrid-routing"] },
+        { ...legacyUavSections[3], anchors: ["watchdog"] },
+      ],
+    },
+    {
+      id: "language-control",
+      title: { zh: "自然語言控制基礎能力", en: "Natural-language control foundations" },
+      body: { zh: "自然語言控制的基礎不是讓模型直接輸出飛行指令，而是把任務拆成可理解、可路由、可檢查的動作單位。條件、位移、轉向、搜尋、靠近、朝向與返航等明確表達可由本地範本處理，未命中的複雜語義才進入受限的模型備援。", en: "The foundation of natural-language control is not letting a model emit flight commands directly. It is decomposing a mission into actions that can be understood, routed, and checked. Explicit conditions, displacement, turns, search, approach, aim, and return can use local templates; unmatched complex semantics enter a constrained model fallback." },
+      points: [
+        { zh: "意圖攔截與子句拆分先建立可觀察的任務上下文。", en: "Intent interception and clause splitting establish an observable task context first." },
+        { zh: "模型處理理解與候選策略，執行邊界仍由本地規則約束。", en: "The model handles understanding and candidate strategies, while local rules constrain the execution boundary." },
+        { zh: "急停與退出保留最高優先級，不依賴模型回應。", en: "Emergency stop and exit retain the highest priority and do not depend on model response." },
+      ],
+      sources: [thesisChapter3, silReadmeLlm],
+      anchors: ["natural-language", "language"],
+    },
+    {
+      ...legacyUavSections[5],
+      id: "autonomous-loop",
+      layout: "centered",
+      title: { zh: "自主執行閉環與視覺伺服", en: "Autonomous execution loop & visual servoing" },
+      body: { zh: "這一章把視覺感知、分階段逼近與終端穿越整理為同一條閉環執行路徑；下方分別呈現感知輸入、視覺伺服與演示媒體。", en: "This chapter brings visual perception, staged approach, and terminal traversal into one closed execution path, followed by the perception inputs, visual-servo loop, and demonstration media." },
+      points: undefined,
+      figures: undefined,
+      media: mediaAssets,
+      anchors: ["servo-strike"],
+      subsections: [
+        { ...legacyUavSections[4], anchors: ["perception"] },
+        {
+          id: "visual-servo-loop",
+          title: { zh: "視覺伺服閉環", en: "Visual-servo loop" },
+          body: legacyUavSections[5].body,
+          points: legacyUavSections[5].points,
+          figures: legacyUavSections[5].figures,
+        },
+      ],
+    },
+    {
+      ...legacyUavSections[6],
+      id: "safety-ablation",
+      layout: "centered",
+      title: { zh: "安全消融實驗", en: "Safety ablation experiment" },
+      body: { zh: "安全消融用來觀察安全防護在不同執行路徑中的作用。比較的重點是硬規則、模型路徑與共同安全檢查如何影響急停、限幅、圍籬與逾時降級；網站只陳列方法與定性證據，不公開精確實驗指標。", en: "The safety ablation examines the role of safety guards across execution paths. It focuses on how hard rules, model paths, and shared safety checks affect emergency stop, limits, fences, and timeout fallback; the site presents methods and qualitative evidence without publishing exact experiment metrics." },
+      points: undefined,
+      anchors: ["safety"],
+      subsections: [{ ...legacyUavSections[6], id: "safety-guards", sources: undefined }],
+    },
+    {
+      ...legacyUavSections[7],
+      id: "semantic-evaluation",
+      title: { zh: "語義理解評測", en: "Semantic understanding evaluation" },
+      body: { zh: "語義評測觀察模型是否保留任務中的目標、參數、動作與效果，並檢查複合指令經過拆分與路由後是否仍能進入受限執行邊界。網站保留評測方法與證據類型，不把論文中的精確數值轉成公開指標。", en: "Semantic evaluation observes whether the model preserves a mission's target, parameters, action, and effect, and whether compound instructions still reach the constrained execution boundary after splitting and routing. The site keeps the evaluation method and evidence type without turning exact thesis values into public metrics." },
+      points: undefined,
+      figures: undefined,
+      anchors: ["semantic", "evaluation"],
+    },
+    {
+      id: "servo-robustness",
+      title: { zh: "視覺伺服魯棒性", en: "Visual-servo robustness" },
+      body: { zh: "這一節觀察視覺伺服在目標位置變化、尺度變化與短暫觀測不穩定時的修正行為。低通濾波、死區與末態趨勢共同抑制畫面抖動；圖表只作為論文證據的索引，不另行推導未公開的精確結論。", en: "This section observes visual-servo corrections under changes in target position and scale, including brief observation instability. Low-pass filtering, dead zones, and the last motion trend work together to suppress image jitter; the figures index thesis evidence without deriving unpublished exact conclusions." },
+      figures: undefined,
+      sources: [thesisChapter4, silReadme],
+      anchors: ["robustness", "visual-servo-robustness"],
+    },
+    {
+      id: "terminal-precision",
+      title: { zh: "終端穿越精度", en: "Terminal traverse precision" },
+      body: { zh: "終端階段在視覺追蹤難以穩定維持時，依估算的剩餘距離與速度進行短暫穿越，接著煞停並懸停。這裡的 strike 指軟體在環模擬中的目標控制／終端穿越任務；本節只說明閉環銜接與證據邊界，不描述現實傷害。", en: "When visual tracking becomes difficult to maintain, the terminal stage performs a short traverse from estimated remaining distance and velocity, followed by braking and hover. Here, strike means a simulated target-control / terminal-traverse task in a software-in-the-loop scene; this section describes the loop handoff and evidence boundary without describing real-world harm." },
+      points: [
+        { zh: "終端狀態由視覺伺服階段明確交接。", en: "The terminal state receives an explicit handoff from visual servoing." },
+        { zh: "短暫動作後進入煞停與懸停，保留安全層的檢查邊界。", en: "The short action is followed by braking and hover within the safety-check boundary." },
+        { zh: "圖表與媒體共同呈現模擬中的終端證據類型。", en: "Figures and media together present the terminal evidence type in simulation." },
+      ],
+      figures: legacyUavSections[7].figures,
+      sources: [thesisChapter4, silReadmeLlm],
+      anchors: ["terminal-traverse", "terminal"],
+    },
+    {
+      ...legacyUavSections[8],
+      id: "limitations",
+      title: { zh: "局限與反思", en: "Limitations & reflection" },
+      anchors: ["limitations", "reflection"],
+    },
+    {
+      id: "future-outlook",
+      title: { zh: "未來展望", en: "Future outlook" },
+      body: { zh: "後續工作可在現有模擬與有限實體樣機聯調的邊界上，逐項檢視開放式長鏈路指令、網路波動、複雜戶外遮蔽、感測器雜訊與多機任務協調，並再評估邊緣側模型、主動視覺反思等方向。這些是後續驗證方向，不代表已完成。", en: "Future work can examine open-ended long-horizon instructions, network variation, complex outdoor occlusion, sensor noise, and multi-agent coordination within the boundary of the current simulation and limited physical-prototype integration. Edge-side models and active visual reflection are further directions to evaluate, not completed capabilities." },
+      sources: [thesisChapter5],
+      anchors: ["outlook", "future"],
     },
   ],
 };
