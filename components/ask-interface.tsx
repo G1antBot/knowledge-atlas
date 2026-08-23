@@ -3,12 +3,15 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { chatAnswers, recommendedQuestions, type ChatSource } from "@/data/content";
-import { mockAnswer, mockFailure } from "@/lib/mock-chat";
 import { useLocale } from "@/components/locale-context";
 import { t } from "@/lib/i18n";
+import { ASK_ERROR_STATUS, isAskErrorCode, type AskErrorCode, type AskErrorResponse, type AskStreamEvent } from "@/lib/ask-protocol";
 
 type Message = { role: "user" | "assistant"; text: string; sources?: ChatSource[]; index?: number };
 type AskInterfaceProps = { variant?: "panel" | "full" };
+type AskErrorState = { code: AskErrorCode; message: string };
+
+const MAX_CONVERSATION_MESSAGES = 16;
 
 const archiveLinks = [
   { index: "01", href: "/projects/uav-recognition-strike-control", zh: "無人機辨識與控制", en: "UAV recognition & control" },
@@ -17,10 +20,43 @@ const archiveLinks = [
 ];
 
 function getSourceHref(source: ChatSource) {
+  if (source.href) return source.href;
   const title = `${source.title.zh} ${source.title.en}`.toLowerCase();
   if (title.includes("knowledge atlas") || title.includes("檔案與章節")) return "/projects/knowledge-atlas";
   if (title.includes("圖片") || title.includes("掃碼") || title.includes("團隊角色")) return "/projects/image-management-system";
   return "/projects/uav-recognition-strike-control";
+}
+
+function errorStatus(code: AskErrorCode) {
+  return String(ASK_ERROR_STATUS[code]);
+}
+
+function isChatSource(value: unknown): value is ChatSource {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const source = value as Record<string, unknown>;
+  const title = source.title as Record<string, unknown> | undefined;
+  const detail = source.detail as Record<string, unknown> | undefined;
+  return Boolean(
+    title && typeof title.zh === "string" && typeof title.en === "string"
+    && detail && typeof detail.zh === "string" && typeof detail.en === "string"
+    && (source.type === "project" || source.type === "archive" || source.type === "system")
+    && (source.href === undefined || typeof source.href === "string"),
+  );
+}
+
+function parseStreamEvent(line: string): AskStreamEvent | null {
+  try {
+    const event = JSON.parse(line) as Record<string, unknown>;
+    if (event.type === "sources" && Array.isArray(event.sources) && event.sources.every(isChatSource)) return { type: "sources", sources: event.sources };
+    if (event.type === "delta" && typeof event.text === "string") return { type: "delta", text: event.text };
+    if (event.type === "done") return { type: "done" };
+    if (event.type === "error" && isAskErrorCode(event.code) && typeof event.message === "string") {
+      return { type: "error", code: event.code, message: event.message };
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
 
 export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
@@ -29,17 +65,15 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [streaming, setStreaming] = useState(false);
-  const [error, setError] = useState<"rate-limit" | "error" | null>(null);
+  const [error, setError] = useState<AskErrorState | null>(null);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const answerRef = useRef(0);
   const endRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  useEffect(() => () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-  }, []);
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   useEffect(() => {
     if (variant === "full" && window.matchMedia("(min-width: 981px)").matches) setSidebarOpen(true);
@@ -54,36 +88,136 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
   }, [question]);
 
   function stopStream() {
-    if (timerRef.current) clearInterval(timerRef.current);
-    timerRef.current = null;
+    abortRef.current?.abort();
+    abortRef.current = null;
     setStreaming(false);
   }
 
-  function submit(value = question) {
+  async function submit(value = question) {
     const clean = value.trim();
     if (!clean || streaming) return;
     stopStream();
     setError(null);
     setFeedback(null);
     setQuestion("");
-    const failure = mockFailure(clean);
-    setMessages((current) => [...current, { role: "user", text: clean }]);
-    if (failure) {
-      setError(failure);
-      return;
-    }
-    const answer = mockAnswer(clean);
     answerRef.current += 1;
     const messageIndex = answerRef.current;
-    setMessages((current) => [...current, { role: "assistant", text: "", sources: answer.sources, index: messageIndex }]);
+    setMessages((current) => {
+      const next: Message[] = [
+        ...current,
+        { role: "user", text: clean },
+        { role: "assistant", text: "", sources: [], index: messageIndex },
+      ];
+      const limited = next.slice(-MAX_CONVERSATION_MESSAGES);
+      return limited[0]?.role === "assistant" ? limited.slice(1) : limited;
+    });
     setStreaming(true);
-    let cursor = 0;
-    const chars = Array.from(t(answer.text, locale));
-    timerRef.current = setInterval(() => {
-      cursor += 1;
-      setMessages((current) => current.map((message) => message.index === messageIndex ? { ...message, text: chars.slice(0, cursor).join("") } : message));
-      if (cursor >= chars.length) stopStream();
-    }, 22);
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const ownsRequest = () => abortRef.current === controller && !controller.signal.aborted;
+    let pendingText = "";
+    let frameId: number | null = null;
+
+    const flushPendingText = () => {
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
+      frameId = null;
+      if (!pendingText || !ownsRequest()) {
+        pendingText = "";
+        return;
+      }
+      const text = pendingText;
+      pendingText = "";
+      setMessages((current) => current.map((message) => message.index === messageIndex ? { ...message, text: message.text + text } : message));
+    };
+
+    const queueText = (text: string) => {
+      pendingText += text;
+      if (frameId === null) frameId = window.requestAnimationFrame(flushPendingText);
+    };
+
+    const cancelPendingText = () => {
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
+      frameId = null;
+      pendingText = "";
+    };
+
+    const removeEmptyAnswer = () => setMessages((current) => current.filter((message) => message.index !== messageIndex || message.text));
+
+    try {
+      const response = await fetch("/api/ask", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: clean, locale }),
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        let payload: AskErrorResponse | null = null;
+        try {
+          payload = await response.json() as AskErrorResponse;
+        } catch {
+          // Keep the public fallback below when an upstream response is malformed.
+        }
+        if (!ownsRequest()) return;
+        removeEmptyAnswer();
+        setError(payload?.error ?? {
+          code: "service-unavailable",
+          message: zh ? "檔案索引暫時無法使用，請稍後再試。" : "The archive index is temporarily unavailable. Try again later.",
+        });
+        return;
+      }
+
+      if (!response.body) throw new Error("Missing response stream");
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value: chunk } = await reader.read();
+        if (!ownsRequest()) {
+          await reader.cancel();
+          return;
+        }
+        buffer += decoder.decode(chunk, { stream: !done });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const event = parseStreamEvent(line);
+          if (!event || !ownsRequest()) continue;
+          if (event.type === "sources") {
+            setMessages((current) => current.map((message) => message.index === messageIndex ? { ...message, sources: event.sources } : message));
+          } else if (event.type === "delta") {
+            queueText(event.text);
+          } else if (event.type === "done") {
+            flushPendingText();
+          } else if (event.type === "error") {
+            flushPendingText();
+            setError({ code: event.code, message: event.message });
+          }
+        }
+
+        if (done) break;
+      }
+    } catch {
+      if (!ownsRequest()) return;
+      flushPendingText();
+      removeEmptyAnswer();
+      setError({
+        code: "service-unavailable",
+        message: zh ? "無法連接檔案服務，請稍後再試。" : "The archive service could not be reached. Try again later.",
+      });
+    } finally {
+      if (abortRef.current === controller) {
+        flushPendingText();
+        if (frameId !== null) window.cancelAnimationFrame(frameId);
+        abortRef.current = null;
+        setStreaming(false);
+      } else {
+        cancelPendingText();
+      }
+    }
   }
 
   function clearConversation() {
@@ -139,7 +273,7 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
 
         <div className="llm-sidebar-foot">
           <div><span className={`llm-live-dot ${streaming ? "is-streaming" : ""}`} /><b>{streaming ? (zh ? "正在整理回答" : "Composing answer") : (zh ? "檔案索引已就緒" : "Archive index ready")}</b></div>
-          <p>{zh ? "目前以公開檔案提供回答，不連接外部模型。" : "Answers currently use public archive data without an external model."}</p>
+          <p>{zh ? "回答先檢索公開檔案；啟用 Kimi 時由模型整理，並保留引用章節。" : "Answers retrieve public archive sections first; when Kimi is enabled, it organizes the response with citations."}</p>
         </div>
       </aside>
 
@@ -149,7 +283,7 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
             <button className="llm-icon-button llm-menu-button" type="button" onClick={() => setSidebarOpen((open) => !open)} aria-expanded={sidebarOpen} aria-controls="ask-sidebar" aria-label={zh ? "切換側欄" : "Toggle sidebar"}><span /><span /><span /></button>
             <div><strong>{zh ? "檔案問答" : "Archive Q&A"}</strong><span>KNOWLEDGE ATLAS / 04</span></div>
           </div>
-          <div className="llm-topbar-actions"><span className="llm-mode"><i />{zh ? "本地檔案" : "Local archive"}</span><button type="button" onClick={toggleLocale} aria-label={zh ? "切換為英文" : "切換為繁體中文"}>{zh ? "中 / EN" : "EN / 中"}</button>{messages.length > 0 && <button type="button" onClick={clearConversation}>{zh ? "清空對話" : "Clear"}</button>}</div>
+          <div className="llm-topbar-actions"><span className="llm-mode"><i />{zh ? "公開檔案" : "Public archive"}</span><button type="button" onClick={toggleLocale} aria-label={zh ? "切換為英文" : "切換為繁體中文"}>{zh ? "中 / EN" : "EN / 中"}</button>{messages.length > 0 && <button type="button" onClick={clearConversation}>{zh ? "清空對話" : "Clear"}</button>}</div>
         </header>
 
         <div className="llm-thread" aria-live="off">
@@ -174,7 +308,7 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
                 </>}
               </div>
             </article>)}
-            {error && <div className="llm-notice" role="alert"><b>{error === "rate-limit" ? "429" : "500"}</b><span>{error === "rate-limit" ? (zh ? "目前無法繼續整理這個問題，請稍後再試。" : "This question cannot be processed right now. Try again later.") : (zh ? "檔案索引暫時無法使用，請換一個問題。" : "The archive index is temporarily unavailable. Try another question.")}</span></div>}
+            {error && <div className="llm-notice" role="alert"><b>{errorStatus(error.code)}</b><span>{error.message}</span></div>}
             {feedback && <p className="llm-feedback" role="status">{feedback}</p>}
             {!streaming && !error && <div className="llm-followups">{recommendedQuestions.slice(4, 8).map((item) => <button type="button" key={item.zh} onClick={() => submit(t(item, locale))}>{t(item, locale)}<span aria-hidden="true">↗</span></button>)}</div>}
             <div ref={endRef} />
@@ -187,7 +321,7 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
             <div className="llm-composer-meta"><span><i />{zh ? "檢索範圍：3 份專案檔案" : "Scope: 3 project archives"}</span><span>{zh ? "Enter 送出 · Shift + Enter 換行" : "Enter to send · Shift + Enter for a new line"}</span></div>
             <button className={`llm-send ${streaming ? "is-stop" : ""}`} type={streaming ? "button" : "submit"} onClick={streaming ? stopStream : undefined} disabled={!streaming && !question.trim()} aria-label={streaming ? (zh ? "停止整理" : "Stop") : (zh ? "送出問題" : "Send question")}><span aria-hidden="true">{streaming ? "■" : "↑"}</span></button>
           </form>
-          <p>{zh ? "回答依目前公開的檔案整理，請以引用章節中的原始內容為準。" : "Answers are organized from the current public archive. Refer to cited sections for the original context."}</p>
+          <p>{zh ? "啟用模型時，問題會傳送至 Kimi API；請勿輸入個人或機密資訊，並以引用章節為準。" : "When the model is enabled, questions are sent to the Kimi API. Do not enter personal or confidential information; verify answers against cited sections."}</p>
         </div>
       </section>
     </div>;
@@ -195,10 +329,10 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
 
   return <div className="ask-layout">
     <section className="ask-console" aria-label={zh ? "知識檔案問答" : "Knowledge archive Q&A"}>
-      <div className="console-bar"><span>ASK / LOCAL ARCHIVE CHANNEL</span><span className="console-status"><i className={`status-dot ${streaming ? "live" : ""}`} />{streaming ? "STREAMING" : "READY"}</span></div>
+      <div className="console-bar"><span>ASK / ARCHIVE CHANNEL</span><span className="console-status"><i className={`status-dot ${streaming ? "live" : ""}`} />{streaming ? "STREAMING" : "READY"}</span></div>
       <div className="conversation">
         <div className="sr-only" role="status" aria-live="polite">{streaming ? (zh ? "正在整理回答" : "Generating answer") : messages.some((message) => message.role === "assistant" && message.text) ? (zh ? "回答已完成" : "Answer complete") : ""}</div>
-        <p className="console-disclaimer">{zh ? "目前以本地公開檔案回覆，不連接外部模型。" : "Currently answered from local public archives without an external model."}</p>
+        <p className="console-disclaimer">{zh ? "啟用模型時，問題會傳送至 Kimi API，並只使用檢索到的公開檔案片段整理回答；請勿輸入個人或機密資訊。" : "When the model is enabled, questions are sent to the Kimi API and answered only from retrieved public archive excerpts. Do not enter personal or confidential information."}</p>
         {messages.length === 0 && <p className="console-intro">{zh ? "可以詢問架構、控制流程、資料來源，或某項設計為何這樣安排。回答會引用對應的專案章節。" : "Ask about the architecture, control flow, sources, or why a design choice was made. Answers cite the relevant project sections."}</p>}
         {messages.map((message, index) => <div className="message" key={`${message.role}-${index}`}>
           <div className="message-label">{message.role === "user" ? (zh ? "YOU / 訪客" : "YOU / Visitor") : (zh ? "ATLAS / 公開檔案" : "ATLAS / Public archive")}</div>
@@ -206,7 +340,7 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
           {message.role === "assistant" && !streaming && message.text && <div className="feedback-row"><button className="tiny-action" type="button" onClick={() => void copyAnswer(message.text)}>{zh ? "複製回答" : "Copy"}</button><button className="tiny-action" type="button" onClick={() => setFeedback(zh ? "感謝回饋" : "Thanks")}>{zh ? "有幫助" : "Helpful"}</button><button className="tiny-action" type="button" onClick={() => setFeedback(zh ? "已記錄" : "Noted")}>{zh ? "需修正" : "Needs correction"}</button></div>}
         </div>)}
         {streaming && <button className="tiny-action" type="button" onClick={stopStream}>{zh ? "停止整理" : "Stop"}</button>}
-        {error && <div className="console-error">{error === "rate-limit" ? (zh ? "目前無法繼續整理這個問題，請稍後再試。" : "This question cannot be processed right now. Try again later.") : (zh ? "檔案索引暫時無法使用。" : "The archive index is temporarily unavailable.")}</div>}
+        {error && <div className="console-error" role="alert">{error.message}</div>}
         {feedback && <div className="message-label">{feedback}</div>}
       </div>
       <form className="console-controls" onSubmit={(event) => { event.preventDefault(); submit(); }}><textarea className="console-input" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder={zh ? "輸入問題……" : "Ask a question..."} aria-label={zh ? "輸入問題" : "Question input"} rows={2} disabled={streaming} /><button className="console-button" type="submit" disabled={streaming || !question.trim()}>{zh ? "送出" : "Send"}</button><button className="console-button secondary" type="button" onClick={clearConversation}>{zh ? "清空" : "Clear"}</button></form>

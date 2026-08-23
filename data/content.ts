@@ -550,8 +550,8 @@ export const archiveProjects: ProjectArchive[] = [
     period: "2026—Present",
     status: "secondary",
     accent: "ink",
-    summary: { zh: "我把這個網站當成一個持續整理資料的介面。首頁先呈現專案檔案，詳情頁再把正文、圖表、來源與相關章節放回同一條閱讀路徑；本地檢索負責在公開內容之間建立入口，後續的伺服器端檢索與模型回答則保留在產品路線圖中。", en: "I use this site as an interface for continuously organizing material. Project archives come first, while detail pages keep writing, figures, sources, and related sections in one reading path. Local retrieval creates entry points across public content; server-side retrieval and model-generated answers remain on the product roadmap." },
-    tags: ["Next.js 16", "React 19", "TypeScript", "Orama", "cmdk", "Motion"],
+    summary: { zh: "我把這個網站當成一個持續整理資料的介面。首頁先呈現專案檔案，詳情頁再把正文、圖表、來源與相關章節放回同一條閱讀路徑；本地搜尋建立內容入口，伺服器端問答則先檢索公開章節，再由 Kimi 整理附有來源的回答。", en: "I use this site as an interface for continuously organizing material. Project archives come first, while detail pages keep writing, figures, sources, and related sections in one reading path. Local search creates entry points, while server-side Q&A retrieves public sections before Kimi organizes a cited answer." },
+    tags: ["Next.js 16", "React 19", "TypeScript", "Orama", "cmdk", "Motion", "Kimi API"],
     sections: [
       {
         id: "purpose",
@@ -613,20 +613,21 @@ export const archiveProjects: ProjectArchive[] = [
       {
         id: "delivery-state",
         title: { zh: "目前實作與產品路線", en: "Current implementation and product roadmap" },
-        body: { zh: "目前版本先固定公開檔案的結構、檢索方式與閱讀介面。下一階段再把個人背景、實習和更多專案整理為可更新的知識來源，並在伺服器端加入向量檢索和帶來源的模型回答；兩個階段在頁面中分開標示。", en: "The current version first stabilizes public archive structure, retrieval, and reading. A later stage can turn personal context, internships, and more projects into maintainable knowledge sources, then add server-side vector retrieval and source-aware model answers. The two stages remain visibly separated." },
+        body: { zh: "目前版本已固定公開檔案的結構、檢索方式與閱讀介面，並加入由伺服器保管憑證的 Kimi 問答：每次只檢索最相關的公開章節，回答同時返回穩定引用。向量資料庫、更多個人知識來源與分散式限流仍保留在後續路線。", en: "The current version stabilizes public archive structure, retrieval, and reading, and adds Kimi Q&A with credentials kept on the server. Each request retrieves only the most relevant public sections and returns stable citations. A vector store, broader personal knowledge sources, and distributed rate limiting remain later work." },
         capabilities: [
           { title: { zh: "結構化專案檔案", en: "Structured project archives" }, detail: { zh: "專案、章節、來源、圖表與媒體使用穩定節點。", en: "Projects, sections, sources, figures, and media use stable nodes." }, status: "implemented" },
           { title: { zh: "本地全文檢索", en: "Local full-text retrieval" }, detail: { zh: "在公開檔案中查找專案、章節、標籤和來源。", en: "Search projects, sections, tags, and sources across public archives." }, status: "implemented" },
           { title: { zh: "雙語與響應式介面", en: "Bilingual responsive interface" }, detail: { zh: "中文與英文共用內容節點，桌面和手機保留一致層級。", en: "Chinese and English share content nodes across desktop and mobile layouts." }, status: "implemented" },
-          { title: { zh: "伺服器端知識檢索", en: "Server-side knowledge retrieval" }, detail: { zh: "把經過公開審核的個人資料寫入向量索引。", en: "Index publication-approved personal material in a vector store." }, status: "planned" },
-          { title: { zh: "帶來源的模型回答", en: "Source-aware model answers" }, detail: { zh: "由伺服器保管模型憑證，回答同時返回檔案章節。", en: "Keep model credentials on the server and return archive sections with answers." }, status: "planned" },
+          { title: { zh: "伺服器端章節檢索", en: "Server-side section retrieval" }, detail: { zh: "以關鍵詞從公開內容選出最相關的 1–2 個章節。", en: "Select the 1–2 most relevant sections from publication-approved content." }, status: "implemented" },
+          { title: { zh: "帶來源的模型回答", en: "Source-aware model answers" }, detail: { zh: "由伺服器保管 Kimi 憑證，流式回答同時返回檔案章節。", en: "Keep Kimi credentials on the server and stream answers with archive sections." }, status: "implemented" },
+          { title: { zh: "向量知識索引", en: "Vector knowledge index" }, detail: { zh: "將更多經過公開審核的個人資料寫入可維護的向量索引。", en: "Index broader publication-approved personal material in a maintainable vector store." }, status: "planned" },
         ],
         sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
       },
       {
         id: "limits",
         title: { zh: "目前邊界", en: "Current boundaries" },
-        body: { zh: "目前可以核驗的是前端程式、公開檔案、本地檢索與介面行為。網站尚未接入伺服器端個人知識庫，也沒有可公開的營運資料；後續功能只有在資料來源、隱私邊界和引用方式確認後才會加入。", en: "What can currently be verified is the front-end code, public archives, local retrieval, and interface behavior. The site is not yet connected to a server-side personal knowledge base and has no public operational data. Later features will be added only after sources, privacy boundaries, and citation behavior are defined." },
+        body: { zh: "目前可以核驗的是前端程式、公開檔案、本地搜尋、伺服器端關鍵詞檢索與帶來源的模型問答。網站尚未接入向量化的個人知識庫，也沒有可公開的營運資料；問題會傳送至外部 Kimi API，因此介面會提醒訪客不要輸入個人或機密資訊。", en: "The verifiable scope now includes the front end, public archives, local search, server-side keyword retrieval, and cited model answers. The site is not connected to a vectorized personal knowledge base and has no public operational dataset. Questions are sent to the external Kimi API, so the interface tells visitors not to enter personal or confidential information." },
         sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
       },
     ],
@@ -721,7 +722,7 @@ export const recommendedQuestions: Bilingual[] = [
   { zh: "Knowledge Atlas 下一階段準備加入什麼？", en: "What is planned for the next stage of Knowledge Atlas?" },
 ];
 
-export type ChatSource = { title: Bilingual; detail: Bilingual; type: "project" | "archive" | "system" };
+export type ChatSource = { title: Bilingual; detail: Bilingual; type: "project" | "archive" | "system"; href?: string };
 export type ChatAnswer = { text: Bilingual; sources: ChatSource[] };
 
 export const chatAnswers: ChatAnswer[] = [
@@ -754,7 +755,7 @@ export const chatAnswers: ChatAnswer[] = [
     sources: [{ title: { zh: "終端穿越", en: "Terminal traverse" }, detail: { zh: "論文第 3 章／SIL README", en: "Thesis chapter 3 / SIL README" }, type: "project" }],
   },
   {
-    text: { zh: "目前提問頁使用公開檔案與本地範例回覆，逐字輸出由瀏覽器計時器模擬，不連線到後端服務。檔案後續會補入可公開引用的專案資料，並繼續驗證從模擬到真實環境、複雜戶外場景與多機協同的遷移邊界。", en: "The question page currently answers from public records and local samples, with progressive output simulated by a browser timer. It does not connect to a back-end service. Next steps are to add public, citable project records and further validate transfer from simulation to real environments, complex outdoor scenes, and multi-agent coordination." },
+    text: { zh: "提問頁會先從公開檔案選出最相關的章節，再由伺服器端 Kimi API 以流式方式整理回答並附上來源；沒有設定模型憑證時才回退到本地範例。檔案後續仍會補入可公開引用的專案資料，並繼續驗證從模擬到真實環境、複雜戶外場景與多機協同的遷移邊界。", en: "The question page first selects the most relevant public archive sections, then the server-side Kimi API streams a cited answer; it falls back to local examples only when model credentials are absent. Later work will add further citable project records and continue validating transfer from simulation to real environments, complex outdoor scenes, and multi-agent coordination." },
     sources: [{ title: { zh: "目前限制與後續驗證", en: "Limitations & outlook" }, detail: { zh: "論文第 5 章 · 從模擬到真實與邊緣部署", en: "Thesis chapter 5 · simulation-to-real and edge deployment" }, type: "system" }],
   },
   {
@@ -770,7 +771,7 @@ export const chatAnswers: ChatAnswer[] = [
     sources: [{ title: { zh: "檔案與章節結構", en: "Archive and section structure" }, detail: { zh: "Knowledge Atlas · 公開原始碼與 README", en: "Knowledge Atlas · public source and README" }, type: "project" }],
   },
   {
-    text: { zh: "下一階段會先整理經過公開審核的個人背景、實習與專案資料，再建立伺服器端向量檢索。模型憑證只保存在伺服器環境中，回答需要同時返回對應檔案章節；在資料來源與隱私邊界確認以前，這些功能維持規劃狀態。", en: "The next stage will first organize publication-approved personal context, internship, and project material, then add server-side vector retrieval. Model credentials will remain in the server environment, and answers must return matching archive sections. These features stay planned until sources and privacy boundaries are confirmed." },
+    text: { zh: "目前的伺服器路由只檢索公開檔案中最相關的 1–2 個章節，模型憑證保存在伺服器環境中，流式回答同時返回對應章節。下一階段才會整理更多經過公開審核的個人資料並評估向量檢索；在資料來源與隱私邊界確認以前，不會把私人材料加入索引。", en: "The current server route retrieves only the 1–2 most relevant public archive sections, keeps model credentials in the server environment, and streams answers with matching citations. A later stage may organize broader publication-approved personal material and evaluate vector retrieval; private material will not enter the index before its source and privacy boundaries are confirmed." },
     sources: [{ title: { zh: "目前實作與產品路線", en: "Current implementation and product roadmap" }, detail: { zh: "Knowledge Atlas · 產品路線", en: "Knowledge Atlas · product roadmap" }, type: "system" }],
   },
 ];

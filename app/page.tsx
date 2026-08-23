@@ -26,7 +26,7 @@ export default function HomePage() {
       <ArchiveIndexMotion projects={archiveProjects} />
     </section>
 
-    <section className="section home-ask" aria-labelledby="ask-heading"><SectionHeading id="ask-heading" eyebrow={{ zh: "向檔案提問 / 02", en: "Archive Q&A / 02" }} title={{ zh: "如果好奇，就直接問。", en: "Ask what you are curious about." }} description={{ zh: "回答會依據目前公開的檔案整理，並帶你回到相關章節。提問頁尚未連接外部模型。", en: "Answers are organized from the current public archive and point back to relevant sections. The question page is not connected to an external model yet." }} locale={locale} /><AskInterface /></section>
+    <section className="section home-ask" aria-labelledby="ask-heading"><SectionHeading id="ask-heading" eyebrow={{ zh: "向檔案提問 / 02", en: "Archive Q&A / 02" }} title={{ zh: "如果好奇，就直接問。", en: "Ask what you are curious about." }} description={{ zh: "回答會先檢索目前公開的檔案，再由 Kimi 整理並帶你回到引用章節。", en: "Answers retrieve the current public archive before Kimi organizes a response and links back to cited sections." }} locale={locale} /><AskInterface /></section>
 
     <section className="section topic-section" aria-labelledby="topics-heading"><SectionHeading id="topics-heading" eyebrow={{ zh: "主題索引 / 03", en: "Topic index / 03" }} title={{ zh: "幾條理解專案的線索。", en: "A few ways into the projects." }} description={{ zh: "主題把控制研究、跨端系統與檔案設計連在一起，用來找到內容，不用來替能力打分。", en: "Topics connect control research, cross-platform systems, and archive design. They are entry points into the material, not capability scores." }} locale={locale} /><div className="topic-index">{topicIndex.map((topic, index) => <span className="topic-item" key={topic.zh}><b>{String(index + 1).padStart(2, "0")}</b>{t(topic, locale)}</span>)}</div></section>
   </div>;

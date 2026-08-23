@@ -65,7 +65,8 @@ flowchart LR
   C --> D[cmdk search and anchor navigation]
   B --> E[Source references]
   E --> F[Section backlinks]
-  B --> G[Static mock Q&A]
+  B --> G[Server-side section retrieval]
+  G --> I[Kimi streaming answer]
   H[Research figures and media] --> A
 ```
 
@@ -96,7 +97,8 @@ Knowledge Atlas 也作为一份可检查的产品档案被收录。它说明项�
 | --- | --- |
 | 结构化项目与章节节点 | 服务器端个人知识来源维护 |
 | Orama 浏览器内全文检索 | 向量检索与引用召回 |
-| 双语、响应式与低动态适配 | 由服务端保管凭证的模型回答 |
+| 双语、响应式与低动态适配 | 向量知识索引与更多公开资料 |
+| 服务器端章节检索与 Kimi 流式回答 | 分布式限流与运营观测 |
 
 项目档案只把仓库代码、README 和真实页面截图作为现阶段证据；尚未实现的能力会明确标记为规划中。
 
@@ -120,8 +122,11 @@ Knowledge Atlas 也作为一份可检查的产品档案被收录。它说明项�
 git clone https://github.com/G1antBot/knowledge-atlas.git
 Set-Location knowledge-atlas
 npm.cmd install
+Copy-Item .env.example .env.local
 npm.cmd run dev
 ```
+
+如需启用真实问答，只在 `.env.local` 或部署平台的加密环境变量中填写 `MOONSHOT_API_KEY`。`KIMI_MODEL` 默认使用 `moonshot-v1-8k`；没有 Key 时自动回退到命中章节的本地摘录，不要给密钥添加 `NEXT_PUBLIC_` 前缀。
 
 打开 [http://127.0.0.1:3000/](http://127.0.0.1:3000/)。
 
@@ -137,12 +142,12 @@ npm.cmd start
 
 | 路径 | 内容 |
 | --- | --- |
-| `/` | 档案索引、Mock 问答与主题索引 |
+| `/` | 档案索引、带来源问答与主题索引 |
 | `/projects` | 项目筛选与档案入口 |
 | `/projects/uav-recognition-strike-control` | 无人机研究主档案、图表与媒体 |
 | `/projects/image-management-system` | 图片管理系统的团队交付与个人分工 |
 | `/projects/knowledge-atlas` | Knowledge Atlas 的信息架构、检索与产品路线 |
-| `/ask` | 完整的静态问答演示 |
+| `/ask` | 公开档案检索与 Kimi 流式问答 |
 | `/about` | 个人背景、教育、实习与本科培养脉络 |
 
 `/profile`、`/metrics` 与旧的 `/projects/team-blog-platform` 是兼容旧入口的重定向路由。
@@ -153,7 +158,7 @@ npm.cmd start
 app/                 Next.js 路由、页面与全局视觉系统
 components/          档案、目录、搜索、问答和媒体组件
 data/content.ts      双语项目、章节、来源和媒体数据
-lib/                 本地检索、国际化与 Mock 问答逻辑
+lib/                 档案检索、国际化与问答协议
 public/research/     各项目档案的公开图例、截图与网页派生资源
 public/media/uav     软件在环演示与轻量 poster
 assets/readme/       GitHub README 的 SVG 与真实页面截图
@@ -163,13 +168,13 @@ assets/readme/       GitHub README 的 SVG 与真实页面截图
 
 | 已实现 | 尚未实现 |
 | --- | --- |
-| 可本地打开的 Next.js 前端 | 服务器端 Kimi API 代理 |
-| 浏览器内公开档案检索 | 向量知识库与检索增强生成 |
-| 静态 Mock 问答和引用入口 | 实时模型回答与流式服务端接口 |
+| 可本地打开的 Next.js 前端与 Edge Route | 向量知识库与更多公开资料 |
+| 浏览器内搜索与服务器端章节检索 | 分布式限流与运营观测 |
+| Kimi 流式回答、引用入口与无 Key 回退 | 多轮会话持久化 |
 | UAV、图片管理系统与 Knowledge Atlas 档案 | 两份既有档案的代表图重新筛选 |
 
-- 当前问答是前端 Mock，不连接外部 AI 服务。
-- API Key 不得写入客户端代码或提交到 Git；后续只能放在服务器环境变量中。
+- 启用模型时，提问会发送至 Kimi API；界面会提醒访客不要输入个人或机密信息，回答以引用章节为准。没有 Key 时只返回命中章节的本地摘录。
+- API Key 不得写入客户端代码或提交到 Git，只能放在服务器环境变量中。
 - 首页不展示实验指标或个人能力评分，论文图表只在对应档案中出现。
 - 培养方案只用于说明本科课程范围，不代表成绩、排名或熟练度自评。
 - 视频/GIF 默认不在首页加载；进入项目档案后仍先显示 poster，点击才加载演示。
@@ -181,7 +186,7 @@ assets/readme/       GitHub README 的 SVG 与真实页面截图
 2. 新媒体必须归属于具体档案，不建立跨项目展示墙。
 3. 新增章节时同时填写稳定 `id`、双语标题与来源引用。
 4. 提交前运行 TypeScript 检查、生产构建和敏感信息扫描。
-5. 后端接入前继续保持前端可独立运行。
+5. 未配置模型凭证时保留本地回退，确保前端与公开档案仍可独立运行。
 
 ---
 
@@ -195,4 +200,4 @@ assets/readme/       GitHub README 的 SVG 与真实页面截图
 - Project directories collapse to the active chapter on desktop. On small screens, the directory becomes an accessible bottom drawer with Escape handling, focus containment and scroll locking.
 - The UAV archive follows the eleven-part thesis presentation order. Its four software-in-the-loop clips belong to the autonomous execution and visual-servo chapter; “strike” remains a simulated target-control / terminal-traverse task.
 - Search indexes projects, chapters, nested subsections, figure captions and chapter media, then links to stable public anchors. Exact experiment metrics, raw logs, API keys and local source paths remain outside the public page.
-- `/ask` remains a browser-only timed mock and does not connect to Kimi or another external model.
+- `/ask` retrieves 1–2 public archive sections on the server, streams a Kimi answer with stable citations, and retains a no-key local fallback.

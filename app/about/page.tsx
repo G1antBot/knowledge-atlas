@@ -54,10 +54,14 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="about-block contact-block">
+        <section className="about-block contact-block" id="contact">
           <h2>{zh ? "聯絡方式 / Contact" : "Contact / 聯絡方式"}</h2>
-          <p className="placeholder-note">{zh ? "公開信箱與其他聯絡方式稍後補上。" : "A public email and other contact channels will be added later."}</p>
-          <SourceTag>{zh ? "資料持續整理" : "Archive in progress"}</SourceTag>
+          <address className="contact-details">
+            <span>{zh ? "個人電話" : "Personal phone"}: <a href="tel:68257662">68257662</a></span>
+            <i aria-hidden="true">|</i>
+            <span>{zh ? "個人郵箱" : "Personal email"}: <a href="mailto:b524462682@gmail.com">b524462682@gmail.com</a></span>
+          </address>
+          <SourceTag>{zh ? "公開聯絡方式" : "Public contact"}</SourceTag>
         </section>
       </div>
     </div>
