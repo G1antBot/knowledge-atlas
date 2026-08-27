@@ -17,12 +17,12 @@ export default function HomePage() {
       <div className="swiss-hero-grid">
         <div className="swiss-hero-number">00</div>
         <div><h1 id="home-title">KNOWLEDGE<br /><span>ARCHIVE</span></h1><p className="swiss-hero-cn">{zh ? "個人知識系統" : "Personal knowledge system"}</p></div>
-        <div className="swiss-hero-note"><p>{zh ? "這裡收著我做過的專案、讀過的論文，以及值得留下來的實驗片段。可以從一份檔案開始，也可以直接提出問題。" : "Projects, thesis material, and experiment records are the base units. Browse the archive first, then enter details through source-aware questions."}</p><SourceTag>{zh ? "目前主檔案：無人機控制演算法" : "Primary record: UAV control algorithm"}</SourceTag></div>
+        <div className="swiss-hero-note"><p>{zh ? "這裡整理我做過的專案、讀過的論文與實驗記錄。可以先閱讀檔案，也可以直接提出問題。" : "Projects, thesis material, and experiment records are the base units. Browse the archive first, then enter details through source-aware questions."}</p><SourceTag>{zh ? "目前主檔案：無人機控制演算法" : "Primary record: UAV control algorithm"}</SourceTag></div>
       </div>
     </section>
 
     <section className="section archive-first home-reveal home-reveal-delay-1" aria-labelledby="archive-heading">
-      <SectionHeading id="archive-heading" eyebrow={{ zh: "檔案索引 / 01", en: "Archive index / 01" }} title={{ zh: "從專案開始。", en: "Start with the projects." }} description={{ zh: "每份檔案都保留問題、取捨與證據；圖表和演示只放在它真正屬於的地方。", en: "Each record keeps the problem, trade-offs, and evidence together. Figures, charts, and media remain inside the record they belong to." }} locale={locale} />
+      <SectionHeading id="archive-heading" eyebrow={{ zh: "檔案索引 / 01", en: "Archive index / 01" }} title={{ zh: "從專案開始。", en: "Start with the projects." }} description={{ zh: "每份檔案都保留問題、取捨與證據；圖表和演示保留在對應的專案章節。", en: "Each record keeps the problem, trade-offs, and evidence together. Figures, charts, and media remain inside the record they belong to." }} locale={locale} />
       <ArchiveIndexMotion projects={archiveProjects} />
     </section>
 

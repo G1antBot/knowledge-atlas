@@ -69,6 +69,34 @@ export type CurriculumGroup = {
   source: SourceRef;
 };
 
+export type EducationRecord = {
+  period: string;
+  school: Bilingual;
+  detail: Bilingual;
+};
+
+export type InternshipRecord = {
+  period: string;
+  company: Bilingual;
+  detail: Bilingual;
+  note: Bilingual;
+};
+
+export type PublicProfile = {
+  title: Bilingual;
+  intro: Bilingual;
+  background: Bilingual;
+  focusAreas: Bilingual[];
+  education: EducationRecord[];
+  internships: InternshipRecord[];
+};
+
+export type PublicContact = {
+  title: Bilingual;
+  phone: { label: Bilingual; value: string; href: string };
+  email: { label: Bilingual; value: string; href: string };
+};
+
 export type ProjectArchive = {
   slug: string;
   index: string;
@@ -163,7 +191,7 @@ const legacyUavArchive: ProjectArchive = {
   slug: "uav-recognition-strike-control",
   index: "01",
   title: { zh: "基於大模型的無人機識別打擊控制演算法", en: "LLM-Based UAV Recognition and Strike Control Algorithm" },
-  subtitle: { zh: "把自然語言任務放進可檢查飛行鏈路的研究檔案。", en: "A research archive for placing natural-language missions inside an inspectable flight chain." },
+  subtitle: { zh: "將自然語言任務納入可檢查飛行鏈路的研究檔案。", en: "A research archive for placing natural-language missions inside an inspectable flight chain." },
   category: { zh: "論文主檔案 · UAV / AI 控制", en: "Thesis primary archive · UAV / AI control" },
   period: "2025—2026",
   status: "primary",
@@ -204,7 +232,7 @@ const legacyUavArchive: ProjectArchive = {
     {
       id: "hybrid-routing",
       title: { zh: "混合路由", en: "Hybrid routing" },
-      body: { zh: "我沒有把所有問題都交給模型，而是先判斷哪些動作已經足夠明確。急停與常見位移等確定性指令走本地硬規則；連接詞會把複合句拆成子句；只有規則無法解釋的複雜語義才進入模型備援。兩條路徑最後都要通過同一套安全檢查。", en: "Routing is not about sending every problem to the model. It first asks which actions are already explicit. Emergency stop and common displacement use local hard rules; conjunctions split compound instructions into clauses; only semantics that rules cannot explain reach model fallback. Both paths share the final safety checks." },
+      body: { zh: "我沒有把所有問題都交給模型，而是先判斷哪些動作已經足夠明確。急停與常見位移等確定性指令由本地硬規則處理；連接詞會把複合句拆成子句；只有規則無法解釋的複雜語義才進入模型備援。兩條路徑最後都要通過同一套安全檢查。", en: "Routing is not about sending every problem to the model. It first asks which actions are already explicit. Emergency stop and common displacement use local hard rules; conjunctions split compound instructions into clauses; only semantics that rules cannot explain reach model fallback. Both paths share the final safety checks." },
       points: [
         { zh: "急停／退出：最高優先級，繞過任務佇列。", en: "Emergency stop / exit: highest priority, bypassing the task queue." },
         { zh: "條件、位移、轉向、搜尋、靠近、朝向與返航：本地範本。", en: "Conditions, displacement, turns, search, approach, aim, and return: local templates." },
@@ -294,7 +322,7 @@ const legacyUavArchive: ProjectArchive = {
     {
       id: "methods",
       title: { zh: "實驗方法", en: "Experiment methods" },
-      body: { zh: "我把論文中的驗證拆成安全性消融、語義理解、視覺靠近、終端穿越與實體樣機聯調幾個方向。網站保留方法、證據類型與限制；實驗數值仍放在原本的論文脈絡裡，不抽成首頁指標。", en: "The thesis validates the system through safety ablation, semantic understanding, visual approach, terminal traversal, and physical-prototype integration. The site keeps methods, evidence types, and limits together, while experiment values remain in their original thesis context instead of becoming homepage metrics." },
+      body: { zh: "論文分別驗證安全性消融、語義理解、視覺靠近、終端穿越與實體樣機聯調。網站保留方法、證據類型與限制；實驗數值仍放在原本的論文脈絡裡，不抽成首頁指標。", en: "The thesis validates the system through safety ablation, semantic understanding, visual approach, terminal traversal, and physical-prototype integration. The site keeps methods, evidence types, and limits together, while experiment values remain in their original thesis context instead of becoming homepage metrics." },
       points: [
         { zh: "SIL：在 RflySim 軟體在環環境驗證閉環。", en: "SIL: validate the loop in the RflySim software-in-the-loop environment." },
         { zh: "安全消融：比較硬規則與純模型路徑的急停行為。", en: "Safety ablation: compare emergency behavior across hard-rule and model-only paths." },
@@ -342,7 +370,7 @@ export const uavArchive: ProjectArchive = {
       ...legacyUavSections[7],
       id: "research-route",
       title: { zh: "研究與設計路線", en: "Research and design route" },
-      body: { zh: "研究先從自然語言任務與飛行執行之間的落差出發，再以規則分流、視覺感知、分階段控制與安全檢查串起可觀察的驗證路線。網站保留方法、證據類型與限制；實驗數值仍放在原本的論文脈絡裡，不抽成首頁指標。", en: "The research starts from the gap between natural-language missions and flight execution, then connects rule-based routing, visual perception, staged control, and safety checks into an observable validation route. The site keeps methods, evidence types, and limits together, while experiment values remain in their original thesis context instead of becoming homepage metrics." },
+      body: { zh: "研究從自然語言任務與飛行執行之間的落差出發，再以規則分流、視覺感知、分階段控制與安全檢查組成可觀察的驗證路線。公開頁面只整理方法、證據類型與定性結論，不呈現精確實驗數值。", en: "The research starts from the gap between natural-language missions and flight execution, then connects rule-based routing, visual perception, staged control, and safety checks into an observable validation route. The site keeps methods, evidence types, and limits together, while experiment values remain in their original thesis context instead of becoming homepage metrics." },
       points: undefined,
       figures: undefined,
       anchors: ["methods"],
@@ -374,7 +402,7 @@ export const uavArchive: ProjectArchive = {
       id: "autonomous-loop",
       layout: "centered",
       title: { zh: "自主執行閉環與視覺伺服", en: "Autonomous execution loop & visual servoing" },
-      body: { zh: "這一章把視覺感知、分階段逼近與終端穿越整理為同一條閉環執行路徑；下方分別呈現感知輸入、視覺伺服與演示媒體。", en: "This chapter brings visual perception, staged approach, and terminal traversal into one closed execution path, followed by the perception inputs, visual-servo loop, and demonstration media." },
+      body: { zh: "本章依序說明視覺感知、分階段逼近與終端穿越所構成的閉環執行路徑，並收錄感知輸入、視覺伺服與對應演示媒體。", en: "This chapter brings visual perception, staged approach, and terminal traversal into one closed execution path, followed by the perception inputs, visual-servo loop, and demonstration media." },
       points: undefined,
       figures: undefined,
       media: mediaAssets,
@@ -635,7 +663,7 @@ export const archiveProjects: ProjectArchive[] = [
   },
 ];
 
-export const education = [
+export const education: EducationRecord[] = [
   { period: "2022.09—2026.06", school: { zh: "中南大學", en: "Central South University" }, detail: { zh: "計算機科學與技術學士 · 已畢業並取得學位 · 長沙", en: "BSc in Computer Science and Technology · Graduated with degree · Changsha" } },
 ];
 
@@ -690,7 +718,7 @@ export const curriculumGroups: CurriculumGroup[] = [
   },
 ];
 
-export const internships = [
+export const internships: InternshipRecord[] = [
   {
     period: "2026.01.01—2026.05.29",
     company: { zh: "長沙空中靈鳥智能科技有限公司", en: "Changsha Kongzhong Lingniao Intelligent Technology Co., Ltd." },
@@ -698,6 +726,39 @@ export const internships = [
     note: { zh: "實習鑑定記錄我在工作中保持勤奮，做事嚴謹；遇到不熟悉的問題時，會向有經驗的同事請教。", en: "The internship assessment records a diligent and careful working approach, including asking experienced colleagues when encountering unfamiliar problems." },
   },
 ];
+
+export const publicProfile: PublicProfile = {
+  title: { zh: "個人資料", en: "Profile" },
+  intro: {
+    zh: "我已完成中南大學計算機科學與技術本科學習並取得學位。這裡整理我的教育背景、專案方向與公開經歷。",
+    en: "I completed a BSc in Computer Science and Technology at Central South University. This profile summarizes my education, project directions, and public experience.",
+  },
+  background: {
+    zh: "我的學習與專案主要涉及大型語言模型、視覺感知與無人機控制，也包括 Web、移動端與服務端系統實作。Knowledge Atlas 按照來源整理每個專案的設計、實驗、分工與限制。",
+    en: "My study and project work mainly cover language models, visual perception, and UAV control, alongside practical web, mobile, and server systems. Knowledge Atlas organizes each project's design, experiments, responsibilities, and limits around its sources.",
+  },
+  focusAreas: [
+    { zh: "大型語言模型進入真實系統", en: "Language models in real systems" },
+    { zh: "可追溯的系統評測", en: "Traceable system evaluation" },
+    { zh: "跨端系統、內容與權限", en: "Cross-platform systems, content, and permissions" },
+  ],
+  education,
+  internships,
+};
+
+export const publicContact: PublicContact = {
+  title: { zh: "聯絡方式", en: "Contact" },
+  phone: {
+    label: { zh: "個人電話", en: "Personal phone" },
+    value: "68257662",
+    href: "tel:68257662",
+  },
+  email: {
+    label: { zh: "個人郵箱", en: "Personal email" },
+    value: "b524462682@gmail.com",
+    href: "mailto:b524462682@gmail.com",
+  },
+};
 
 export const topicIndex: Bilingual[] = [
   { zh: "大型語言模型與控制邊界", en: "Language models and control boundaries" },
@@ -708,6 +769,7 @@ export const topicIndex: Bilingual[] = [
 ];
 
 export const recommendedQuestions: Bilingual[] = [
+  { zh: "可以簡單介紹一下你自己嗎？", en: "Could you briefly introduce yourself?" },
   { zh: "為什麼要把大型語言模型放在高層決策？", en: "Why place the language model at the high-level decision layer?" },
   { zh: "混合路由如何決定走規則或模型？", en: "How does hybrid routing choose rules versus the model?" },
   { zh: "雙執行緒看門狗如何處理急停？", en: "How does the dual-thread watchdog handle emergency stop?" },
@@ -771,7 +833,7 @@ export const chatAnswers: ChatAnswer[] = [
     sources: [{ title: { zh: "檔案與章節結構", en: "Archive and section structure" }, detail: { zh: "Knowledge Atlas · 公開原始碼與 README", en: "Knowledge Atlas · public source and README" }, type: "project" }],
   },
   {
-    text: { zh: "目前的伺服器路由只檢索公開檔案中最相關的 1–2 個章節，模型憑證保存在伺服器環境中，流式回答同時返回對應章節。下一階段才會整理更多經過公開審核的個人資料並評估向量檢索；在資料來源與隱私邊界確認以前，不會把私人材料加入索引。", en: "The current server route retrieves only the 1–2 most relevant public archive sections, keeps model credentials in the server environment, and streams answers with matching citations. A later stage may organize broader publication-approved personal material and evaluate vector retrieval; private material will not enter the index before its source and privacy boundaries are confirmed." },
+    text: { zh: "目前的伺服器路由會從公開檔案與經過篩選的個人資料中選出最相關的 1–2 個節點，模型憑證保存在伺服器環境中，流式回答同時返回對應來源。個人介紹只使用教育背景、專案方向與公開經歷；聯絡方式只有在問題明確詢問時才會加入資料。", en: "The server route selects the 1–2 most relevant nodes from public archives and the reviewed public profile, keeps model credentials in the server environment, and streams answers with matching citations. Profile answers use only education, project directions, and public experience; contact details are included only when a question explicitly asks for them." },
     sources: [{ title: { zh: "目前實作與產品路線", en: "Current implementation and product roadmap" }, detail: { zh: "Knowledge Atlas · 產品路線", en: "Knowledge Atlas · product roadmap" }, type: "system" }],
   },
 ];

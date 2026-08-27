@@ -13,19 +13,6 @@ export type ArchiveIndexMotionProps = {
   id?: string;
 };
 
-const cardVariants = {
-  hidden: { opacity: 0, y: 18 },
-  visible: (index: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: {
-      delay: index * 0.07,
-      duration: 0.52,
-      ease: [0.2, 0.75, 0.25, 1] as const,
-    },
-  }),
-};
-
 function ArchiveProgress({ target }: { target: RefObject<HTMLDivElement | null> }) {
   const { scrollYProgress } = useScroll({
     target,
@@ -37,20 +24,15 @@ function ArchiveProgress({ target }: { target: RefObject<HTMLDivElement | null> 
 
 export function ArchiveIndexMotion({ projects, id }: ArchiveIndexMotionProps) {
   const { locale } = useLocale();
+  const reduceMotion = useReducedMotion();
   const zh = locale === "zh";
-  const reducedMotion = useReducedMotion();
   const indexRef = useRef<HTMLDivElement>(null);
 
   return <div className="swiss-archive-motion" id={id} ref={indexRef}>
-    {!reducedMotion && <ArchiveProgress target={indexRef} />}
+    {!reduceMotion && <ArchiveProgress target={indexRef} />}
     <div className="swiss-archive-grid" role="list" aria-label={zh ? "專案檔案" : "Project archive"}>
-      {projects.map((project, index) => <motion.div
+      {projects.map((project, index) => <div
         className="swiss-archive-motion-item"
-        custom={index}
-        initial={false}
-        whileInView={reducedMotion ? undefined : "visible"}
-        viewport={{ once: true, amount: 0.24 }}
-        variants={cardVariants}
         role="listitem"
         style={{ "--archive-index": index } as CSSProperties}
         key={project.slug}
@@ -68,7 +50,7 @@ export function ArchiveIndexMotion({ projects, id }: ArchiveIndexMotionProps) {
             <span className="swiss-card-open">{zh ? "開啟檔案" : "Open record"} <Arrow /></span>
           </div>
         </Link>
-      </motion.div>)}
+      </div>)}
     </div>
   </div>;
 }

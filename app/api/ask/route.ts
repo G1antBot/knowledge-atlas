@@ -50,8 +50,8 @@ const errorMessages: Record<AskErrorCode, Bilingual> = {
 };
 
 const noArchiveMatch: Bilingual = {
-  zh: "檔案中未收錄與這個問題相關的公開內容，因此目前無法根據站內資料回答。你可以改問專案架構、設計取捨、實作範圍或檔案來源。",
-  en: "The archive does not contain public material relevant to this question, so it cannot be answered from the site records. Try asking about project architecture, design tradeoffs, implementation scope, or sources.",
+  zh: "檔案中未收錄與這個問題相關的公開內容，因此目前無法根據站內資料回答。你可以改問個人背景、專案架構、設計取捨、實作範圍或檔案來源。",
+  en: "The archive does not contain public material relevant to this question, so it cannot be answered from the site records. Try asking about the public profile, project architecture, design tradeoffs, implementation scope, or sources.",
 };
 
 // Edge/Serverless instances do not share memory. This is temporary per-instance protection,

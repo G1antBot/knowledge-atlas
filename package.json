@@ -7,13 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "tsc --noEmit",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "test:retrieval": "node --require ./tests/node-userinfo-shim.cjs --import tsx --test tests/archive-retrieval.test.ts"
   },
   "dependencies": {
     "@orama/orama": "^3.1.18",
     "cmdk": "^1.1.1",
     "motion": "^13.1.0",
     "next": "^16.3.1",
+    "opencc-js": "1.4.2",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
@@ -21,6 +23,7 @@
     "@types/node": "20.17.24",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
+    "tsx": "4.23.12",
     "typescript": "5.8.2"
   }
 }
