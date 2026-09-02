@@ -126,7 +126,7 @@ Copy-Item .env.example .env.local
 npm.cmd run dev
 ```
 
-如需启用真实问答，只在 `.env.local` 或部署平台的加密环境变量中填写 `MOONSHOT_API_KEY`。`KIMI_MODEL` 默认使用 `moonshot-v1-8k`；没有 Key 时自动回退到命中章节的本地摘录，不要给密钥添加 `NEXT_PUBLIC_` 前缀。
+如需启用真实问答，只在 `.env.local` 或部署平台的加密环境变量中填写 `MOONSHOT_API_KEY`。`KIMI_MODEL` 默认使用 `kimi-k2.6`，服务端关闭思考模式以控制档案问答的延迟与输出长度；没有 Key 时自动回退到命中章节的本地摘录，不要给密钥添加 `NEXT_PUBLIC_` 前缀。
 
 打开 [http://127.0.0.1:3000/](http://127.0.0.1:3000/)。
 

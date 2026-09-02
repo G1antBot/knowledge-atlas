@@ -23,7 +23,7 @@ const KIMI_ENDPOINTS = [
   "https://api.moonshot.cn/v1/chat/completions",
   "https://api.moonshot.ai/v1/chat/completions",
 ] as const;
-const KIMI_DEFAULT_MODEL = "moonshot-v1-8k";
+const KIMI_DEFAULT_MODEL = "kimi-k2.6";
 const KIMI_MAX_COMPLETION_TOKENS = 500;
 
 const errorMessages: Record<AskErrorCode, Bilingual> = {
@@ -241,7 +241,10 @@ async function kimiStreamResponse(
   apiKey: string,
 ): Promise<Response> {
   const upstreamController = new AbortController();
-  const model = process.env.KIMI_MODEL?.trim() || KIMI_DEFAULT_MODEL;
+  const configuredModel = process.env.KIMI_MODEL?.trim();
+  const model = configuredModel?.startsWith("moonshot-v1")
+    ? KIMI_DEFAULT_MODEL
+    : configuredModel || KIMI_DEFAULT_MODEL;
   let timedOut = false;
   let cleaned = false;
 
@@ -268,6 +271,7 @@ async function kimiStreamResponse(
     ],
     stream: true,
     max_completion_tokens: KIMI_MAX_COMPLETION_TOKENS,
+    thinking: { type: "disabled" },
   });
 
   let upstream: Response | undefined;
