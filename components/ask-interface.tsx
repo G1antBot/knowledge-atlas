@@ -21,8 +21,8 @@ const archiveLinks = [
 ];
 
 const introSuggestion = {
-  zh: "請介紹你的教育背景與專案方向。",
-  en: "Tell me about your education and project direction.",
+  zh: "請介紹教育背景與專案方向。",
+  en: "Summarize the education and project direction.",
 };
 
 const focusableSelector = [
@@ -383,8 +383,8 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
           {messages.length === 0 ? <div className="llm-empty-state">
             <div className="llm-empty-index"><b>04</b><span>ASK THE ARCHIVE</span></div>
             <h1>{zh ? <>想從哪一份<br /><em>檔案</em>開始？</> : <>Where should we<br /><em>start reading?</em></>}</h1>
-            <p>{zh ? "可以直接詢問專案如何運作、某項設計為何這樣安排，或我在團隊中負責哪些部分。回答會附上可以繼續閱讀的公開資料章節。" : "Ask how a project works, why a design choice was made, or which parts I owned. Each answer points to public material sections you can continue reading."}</p>
-            <div className="llm-intro-links"><Link className="llm-profile-link" href="/about#profile">{zh ? "先了解我的背景" : "Read my profile"}<span aria-hidden="true">↗</span></Link><button className="llm-intro-suggestion" type="button" onClick={() => submit(t(introSuggestion, locale))}><span>{t(introSuggestion, locale)}</span><i aria-hidden="true">↗</i></button></div>
+            <p>{zh ? "可以直接詢問專案如何運作、某項設計為何這樣安排，或團隊分工與負責範圍。回答會附上可以繼續閱讀的公開資料章節。" : "Ask how a project works, why a design choice was made, or how responsibilities were divided across the team. Each answer points to public material sections you can continue reading."}</p>
+            <div className="llm-intro-links"><Link className="llm-profile-link" href="/about#profile">{zh ? "先了解個人背景" : "Read the profile"}<span aria-hidden="true">↗</span></Link><button className="llm-intro-suggestion" type="button" onClick={() => submit(t(introSuggestion, locale))}><span>{t(introSuggestion, locale)}</span><i aria-hidden="true">↗</i></button></div>
             <div className="llm-suggestion-grid" aria-label={zh ? "建議問題" : "Suggested questions"}>
               {recommendedQuestions.slice(0, 4).map((item, index) => <button type="button" key={item.zh} onClick={() => submit(t(item, locale))}><b>{String(index + 1).padStart(2, "0")}</b><span>{t(item, locale)}</span><i aria-hidden="true">↗</i></button>)}
             </div>
@@ -425,7 +425,7 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
       <div className="conversation">
         <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{liveMessage}</div>
         <p className="console-disclaimer">{zh ? "啟用模型時，問題會傳送至 Kimi API，並只使用檢索到的公開資料片段整理回答；請勿輸入個人或機密資訊。" : "When the model is enabled, questions are sent to the Kimi API and answered only from retrieved public material excerpts. Do not enter personal or confidential information."}</p>
-        {messages.length === 0 && <><p className="console-intro">{zh ? "可以詢問架構、控制流程、資料來源，或某項設計為何這樣安排。回答會引用對應的專案章節。" : "Ask about the architecture, control flow, sources, or why a design choice was made. Answers cite the relevant project sections."} <Link href="/about#profile">{zh ? "先了解我的背景" : "Read my profile"} ↗</Link></p><button className="console-intro-suggestion" type="button" onClick={() => submit(t(introSuggestion, locale))}>{t(introSuggestion, locale)}<span aria-hidden="true">↗</span></button></>}
+        {messages.length === 0 && <><p className="console-intro">{zh ? "可以詢問架構、控制流程、資料來源，或某項設計為何這樣安排。回答會引用對應的專案章節。" : "Ask about the architecture, control flow, sources, or why a design choice was made. Answers cite the relevant project sections."} <Link href="/about#profile">{zh ? "先了解個人背景" : "Read the profile"} ↗</Link></p><button className="console-intro-suggestion" type="button" onClick={() => submit(t(introSuggestion, locale))}>{t(introSuggestion, locale)}<span aria-hidden="true">↗</span></button></>}
         {messages.map((message, index) => <div className="message" key={`${message.role}-${index}`}>
           <div className="message-label">{message.role === "user" ? (zh ? "YOU / 訪客" : "YOU / Visitor") : (zh ? "ATLAS / 公開資料" : "ATLAS / Public materials")}</div>
           <div className={message.role === "user" ? "message-user" : "message-assistant"}>{message.text}{message.role === "assistant" && streaming && index === messages.length - 1 && <span className="cursor" />}</div>

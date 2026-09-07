@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { publicContact } from "@/data/content";
+import { curriculumGroups, publicContact, publicProfile } from "@/data/content";
 import { retrieveArchive } from "@/lib/archive-retrieval";
 
 const contactValues = [publicContact.phone.value, publicContact.email.value];
@@ -32,6 +32,38 @@ test("profile introduction intents resolve to the reviewed public profile", () =
     const result = retrieveArchive(question, question.includes("about") || question.includes("introduce") ? "en" : "zh");
     assert.equal(result.sources[0]?.href, "/about#profile", question);
   }
+});
+
+test("profile retrieval indexes the bilingual name and curriculum courses", () => {
+  const nameResult = retrieveArchive(publicProfile.name.zh, "zh");
+  const courseQueries = [
+    { question: "移動應用開發", locale: "zh" as const },
+    { question: "Mobile application development", locale: "en" as const },
+  ];
+  const course = curriculumGroups[0].courses.find((item) => item.en === "Mobile application development");
+
+  assert.ok(course, "the profile curriculum fixture should include the mobile application course");
+  assert.equal(nameResult.sources[0]?.href, "/about#profile");
+  assert.equal(nameResult.prompt.includes(publicProfile.name.zh), true);
+
+  for (const { question, locale } of courseQueries) {
+    const result = retrieveArchive(question, locale);
+    const serialized = JSON.stringify(result);
+
+    assert.equal(result.sources[0]?.href, "/about#curriculum", question);
+    assert.equal(result.prompt.includes(course[locale]), true, question);
+    assert.equal(result.fallbackText?.[locale].includes(course[locale]), true, question);
+    for (const value of contactValues) assert.equal(serialized.includes(value), false, question);
+  }
+});
+
+test("profile material asks for objective narration without model identity", () => {
+  const result = retrieveArchive("about you", "en");
+
+  assert.equal(result.sources[0]?.href, "/about#profile");
+  assert.match(result.prompt, /客观叙述/);
+  assert.doesNotMatch(result.prompt, /网站主人第一人称/);
+  assert.match(result.prompt, /模型自身/);
 });
 
 test("generic profile retrieval never includes contact details", () => {

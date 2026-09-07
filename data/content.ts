@@ -83,6 +83,7 @@ export type InternshipRecord = {
 };
 
 export type PublicProfile = {
+  name: Bilingual;
   title: Bilingual;
   intro: Bilingual;
   background: Bilingual;
@@ -196,14 +197,14 @@ const legacyUavArchive: ProjectArchive = {
   period: "2025—2026",
   status: "primary",
   accent: "blue",
-  summary: { zh: "在這個系統裡，我沒有讓大型語言模型直接接管飛行，而是把它放在高層意圖與策略的位置，再透過規則、視覺伺服、飛控與安全防護，把動作收束在可驗證的邊界內。這裡的 strike 指軟體在環（SIL）模擬場景中的目標控制／終端穿越任務，不描述現實傷害。", en: "The system does not hand flight directly to a language model. It places the model at the intent and strategy layer, then bounds execution through rules, visual servoing, the flight stack, and safety guards. Here, strike means a simulated target-control / terminal-traverse task in a software-in-the-loop scene." },
+  summary: { zh: "在這個系統裡，大型語言模型不直接接管飛行，而是位於高層意圖與策略層；規則、視覺伺服、飛控與安全防護將動作限制在可驗證的邊界內。這裡的 strike 指軟體在環（SIL）模擬場景中的目標控制／終端穿越任務，不描述現實傷害。", en: "The system does not hand flight directly to a language model. It places the model at the intent and strategy layer, then bounds execution through rules, visual servoing, the flight stack, and safety guards. Here, strike means a simulated target-control / terminal-traverse task in a software-in-the-loop scene." },
   tags: ["LLM", "YOLOE", "MAVLink / PX4", "RflySim", "SIL", "Visual servo"],
   sources: [thesisChapter3, thesisChapter4, thesisChapter5, silReadme, silReadmeLlm],
   sections: [
     {
       id: "abstract",
       title: { zh: "研究問題與白話說明", en: "In plain language" },
-      body: { zh: "人可以用一句話描述複合任務，無人機卻需要明確的動作、目標與安全邊界。我把問題拆成兩個部分：讓語言模型處理帶有模糊性的任務，同時讓急停、限幅、圍籬與逾時等關鍵保護不依賴模型當下的判斷。", en: "A person can describe a compound mission in one sentence, while a UAV needs explicit actions, targets, and safety boundaries. The central question is how a language model can handle ambiguity while emergency stop, limits, fences, and timeouts do not depend on its immediate judgment." },
+      body: { zh: "人可以用一句話描述複合任務，無人機卻需要明確的動作、目標與安全邊界。問題分成兩個部分：語言模型處理帶有模糊性的任務，急停、限幅、圍籬與逾時等關鍵保護則不依賴模型當下的判斷。", en: "A person can describe a compound mission in one sentence, while a UAV needs explicit actions, targets, and safety boundaries. The central question is how a language model can handle ambiguity while emergency stop, limits, fences, and timeouts do not depend on its immediate judgment." },
       points: [
         { zh: "模型負責理解任務並產生候選策略。", en: "The model handles interpretation and candidate strategies." },
         { zh: "本地規則負責確定性動作與快速分流。", en: "Local rules handle deterministic actions and fast routing." },
@@ -214,7 +215,7 @@ const legacyUavArchive: ProjectArchive = {
     {
       id: "architecture",
       title: { zh: "四層系統架構", en: "Four-layer architecture" },
-      body: { zh: "設計上，我把系統分成感知、決策、控制與安全四層。四層之間並非只能向下傳遞：看門狗可以從輸入側中斷任務，安全層則包住所有最後送出的動作，讓每一層都有清楚的責任範圍。", en: "The system is organized into perception, decision, control, and safety layers. It is not only a one-way downward pipeline: the watchdog can short-circuit a task from the input side, while the safety layer wraps every final command." },
+      body: { zh: "系統分成感知、決策、控制與安全四層。四層之間並非只能向下傳遞：看門狗可以從輸入側中斷任務，安全層則包住所有最後送出的動作，讓每一層都有清楚的責任範圍。", en: "The system is organized into perception, decision, control, and safety layers. It is not only a one-way downward pipeline: the watchdog can short-circuit a task from the input side, while the safety layer wraps every final command." },
       points: [
         { zh: "感知層：目標偵測、狀態讀取與姿態橋接。", en: "Perception: object detection, state reading, and pose bridging." },
         { zh: "決策層：意圖攔截、子句拆分、路由與模型備援。", en: "Decision: intent interception, clause splitting, routing, and model fallback." },
@@ -232,7 +233,7 @@ const legacyUavArchive: ProjectArchive = {
     {
       id: "hybrid-routing",
       title: { zh: "混合路由", en: "Hybrid routing" },
-      body: { zh: "我沒有把所有問題都交給模型，而是先判斷哪些動作已經足夠明確。急停與常見位移等確定性指令由本地硬規則處理；連接詞會把複合句拆成子句；只有規則無法解釋的複雜語義才進入模型備援。兩條路徑最後都要通過同一套安全檢查。", en: "Routing is not about sending every problem to the model. It first asks which actions are already explicit. Emergency stop and common displacement use local hard rules; conjunctions split compound instructions into clauses; only semantics that rules cannot explain reach model fallback. Both paths share the final safety checks." },
+      body: { zh: "路由不會把所有問題都交給模型，而是先判斷哪些動作已經足夠明確。急停與常見位移等確定性指令由本地硬規則處理；連接詞會把複合句拆成子句；只有規則無法解釋的複雜語義才進入模型備援。兩條路徑最後都要通過同一套安全檢查。", en: "Routing is not about sending every problem to the model. It first asks which actions are already explicit. Emergency stop and common displacement use local hard rules; conjunctions split compound instructions into clauses; only semantics that rules cannot explain reach model fallback. Both paths share the final safety checks." },
       points: [
         { zh: "急停／退出：最高優先級，繞過任務佇列。", en: "Emergency stop / exit: highest priority, bypassing the task queue." },
         { zh: "條件、位移、轉向、搜尋、靠近、朝向與返航：本地範本。", en: "Conditions, displacement, turns, search, approach, aim, and return: local templates." },
@@ -243,7 +244,7 @@ const legacyUavArchive: ProjectArchive = {
     {
       id: "watchdog",
       title: { zh: "雙執行緒看門狗", en: "Dual-thread watchdog" },
-      body: { zh: "我讓看門狗輸入執行緒持續監聽終端，急停不會先進入工作佇列。偵測到急停後，它直接送出零速度煞停、設定中斷狀態並清空既有任務；工作執行緒則在每個子句之間檢查狀態，避免後續動作繼續執行。", en: "The watchdog input thread keeps listening at the terminal and never queues an emergency stop. It sends a zero-velocity brake, marks the task interrupted, and clears queued work; the worker checks that state between clauses so later actions do not continue." },
+      body: { zh: "看門狗輸入執行緒持續監聽終端，急停不會先進入工作佇列。偵測到急停後，它直接送出零速度煞停、設定中斷狀態並清空既有任務；工作執行緒則在每個子句之間檢查狀態，避免後續動作繼續執行。", en: "The watchdog input thread keeps listening at the terminal and never queues an emergency stop. It sends a zero-velocity brake, marks the task interrupted, and clears queued work; the worker checks that state between clauses so later actions do not continue." },
       points: [
         { zh: "輸入監聽與任務執行解耦。", en: "Input listening is decoupled from task execution." },
         { zh: "急停路徑不依賴模型回應或任務佇列。", en: "The emergency path does not depend on model response or queue order." },
@@ -279,7 +280,7 @@ const legacyUavArchive: ProjectArchive = {
     {
       id: "servo-strike",
       title: { zh: "視覺伺服與 strike 控制", en: "Visual servoing & strike control" },
-      body: { zh: "我先讓視覺伺服進入 YAW_ALIGN，把目標帶回畫面中心，再進入 APPROACH，依據目標位置與尺度調整前進、垂向與偏航。當目標靠近到視覺難以穩定觀察時，系統切換到終端盲飛：依估算的剩餘距離與速度進行短暫衝刺，接著急煞並懸停。這裡的 strike 指模擬目標控制／終端穿越任務，不描述現實傷害。", en: "Visual servoing begins with YAW_ALIGN, bringing the target toward the image center, then moves to APPROACH, adjusting forward, vertical, and yaw motion from target position and scale. When the target becomes too close for stable visual tracking, the system switches to terminal blind flight: a short burst based on estimated distance and velocity, followed by braking and hover. Here, strike is a simulated target-control / terminal-traverse task, not a description of real-world harm." },
+      body: { zh: "視覺伺服先進入 YAW_ALIGN，把目標帶回畫面中心，再進入 APPROACH，依據目標位置與尺度調整前進、垂向與偏航。當目標靠近到視覺難以穩定觀察時，系統切換到終端盲飛：依估算的剩餘距離與速度進行短暫衝刺，接著急煞並懸停。這裡的 strike 指模擬目標控制／終端穿越任務，不描述現實傷害。", en: "Visual servoing begins with YAW_ALIGN, bringing the target toward the image center, then moves to APPROACH, adjusting forward, vertical, and yaw motion from target position and scale. When the target becomes too close for stable visual tracking, the system switches to terminal blind flight: a short burst based on estimated distance and velocity, followed by braking and hover. Here, strike is a simulated target-control / terminal-traverse task, not a description of real-world harm." },
       points: [
         { zh: "低通濾波與死區抑制畫面抖動。", en: "Low-pass filtering and dead zones suppress visual jitter." },
         { zh: "短暫遺失目標時保留末態趨勢，避免立即失敗。", en: "A brief target loss preserves the last motion trend instead of failing immediately." },
@@ -480,12 +481,12 @@ export const archiveProjects: ProjectArchive[] = [
     slug: "image-management-system",
     index: "02",
     title: { zh: "圖片管理系統", en: "Image Management System" },
-    subtitle: { zh: "四人團隊完成的跨端圖片管理系統，這份檔案只記錄我負責的後端與工程化工作。", en: "A cross-platform image system built by a four-person team, documented here through my backend and delivery responsibilities." },
+    subtitle: { zh: "四人團隊完成的跨端圖片管理系統，本頁只記錄個人負責的後端與工程化工作。", en: "A cross-platform image system built by a four-person team. This page documents only the assigned backend and delivery responsibilities." },
     category: { zh: "團隊專案 · Web／移動端／服務端", en: "Team project · Web / mobile / server" },
     period: "2024.11—2025.02",
     status: "secondary",
     accent: "red",
-    summary: { zh: "這個課程專案由四人協作完成，涵蓋 PC 端、Android 移動端、Spring Boot 服務端、MySQL 與阿里雲 OSS。我主要負責掃碼與持久化登入、物件儲存與敏感資訊過濾、GitLab 協作流程，以及 Docker 容器化部署。", en: "This four-person course project spans a PC client, Android client, Spring Boot services, MySQL, and Alibaba Cloud OSS. My work focused on QR and persistent login, object storage and sensitive-content filtering, GitLab collaboration, and Docker deployment." },
+    summary: { zh: "這個課程專案由四人協作完成，涵蓋 PC 端、Android 移動端、Spring Boot 服務端、MySQL 與阿里雲 OSS。個人負責範圍集中在掃碼與持久化登入、物件儲存與敏感資訊過濾、GitLab 協作流程，以及 Docker 容器化部署。", en: "This four-person course project spans a PC client, Android client, Spring Boot services, MySQL, and Alibaba Cloud OSS. The documented responsibilities cover QR and persistent login, object storage and sensitive-content filtering, GitLab collaboration, and Docker deployment." },
     tags: ["4-person team", "Spring Boot", "Vue 3", "MySQL", "Alibaba Cloud OSS", "Docker"],
     sections: [
       {
@@ -494,7 +495,7 @@ export const archiveProjects: ProjectArchive[] = [
         body: { zh: "系統把登入、圖片、相簿與檔案儲存整理成一條跨端流程。使用者可以從 PC 或 Android 端登入，管理圖片與相簿；服務端負責身分驗證、資料操作與檔案存取，圖片本體存入阿里雲 OSS，資料庫保留使用者、圖片、相簿與檔案位置之間的關係。", en: "The system connects authentication, images, albums, and file storage across PC and Android clients. The server handles identity, data operations, and file access; image objects live in Alibaba Cloud OSS while the database keeps user, image, album, and file-location relationships." },
         points: [
           { zh: "專案由四人共同完成；本頁不把團隊交付全部歸為個人成果。", en: "The project was completed by four people; this page does not present the entire team delivery as individual work." },
-          { zh: "我的角色是後端開發，並負責部分協作與部署工作。", en: "My role was backend development, with additional collaboration and deployment responsibilities." },
+          { zh: "角色：後端開發，另負責部分協作與部署工作。", en: "Role: backend development, with additional collaboration and deployment responsibilities." },
         ],
         figures: [
           {
@@ -529,7 +530,7 @@ export const archiveProjects: ProjectArchive[] = [
       {
         id: "authentication",
         title: { zh: "掃碼登入與持久化鑑權", en: "QR login and persistent authentication" },
-        body: { zh: "我實作了掃碼登入與狀態輪詢。Web 端取得隨機字串並產生二維碼；移動端掃描後提交字串與使用者資訊；服務端完成配對與身分檢查，再把登入結果交回 Web 端。登入狀態同時支援 7 天持久化鑑權。", en: "I implemented QR login and status polling. The web client requests a random string and presents it as a QR code; the mobile client submits the scanned string with user information; the server matches and validates the request before returning the login result to the web client. Authentication also supports a seven-day persistent session." },
+        body: { zh: "後端工作包括實作掃碼登入與狀態輪詢。Web 端取得隨機字串並產生二維碼；移動端掃描後提交字串與使用者資訊；服務端完成配對與身分檢查，再把登入結果交回 Web 端。登入狀態同時支援 7 天持久化鑑權。", en: "The backend work included QR login and status polling. The web client requests a random string and presents it as a QR code; the mobile client submits the scanned string with user information; the server matches and validates the request before returning the login result to the web client. Authentication also supports a seven-day persistent session." },
         figures: [
           {
             path: "/research/image-management/qr-login-flow.svg",
@@ -543,12 +544,12 @@ export const archiveProjects: ProjectArchive[] = [
       {
         id: "storage-review",
         title: { zh: "物件儲存與內容審核", en: "Object storage and content review" },
-        body: { zh: "我接入阿里雲 OSS，處理大檔案分片上傳與靜態資源存取。資料庫不直接保存圖片內容，而是保存對應位置與業務資料；服務端另外加入圖片與文字的敏感資訊過濾與審核流程。", en: "I integrated Alibaba Cloud OSS for multipart uploads and static-resource access. The database stores locations and business records rather than image bodies, while the server adds sensitive-content filtering and review for images and text." },
+        body: { zh: "後端接入阿里雲 OSS，處理大檔案分片上傳與靜態資源存取。資料庫不直接保存圖片內容，而是保存對應位置與業務資料；服務端另外加入圖片與文字的敏感資訊過濾與審核流程。", en: "The backend integrates Alibaba Cloud OSS for multipart uploads and static-resource access. The database stores locations and business records rather than image bodies, while the server adds sensitive-content filtering and review for images and text." },
         figures: [
           {
             path: "/research/image-management/batch-upload.webp",
             alt: { zh: "Android 端批次上傳進度畫面", en: "Android batch-upload progress screen" },
-            caption: { zh: "上傳進度回饋（團隊交付介面）：這個畫面對應我負責的服務端檔案接收與 OSS 儲存流程。", en: "Upload progress (team-delivered interface): this screen corresponds to the server-side file intake and OSS storage flow I implemented." },
+            caption: { zh: "上傳進度回饋（團隊交付介面）：這個畫面對應服務端檔案接收與 OSS 儲存流程。", en: "Upload progress (team-delivered interface): this screen corresponds to the server-side file intake and OSS storage flow." },
             format: "portrait",
           },
         ],
@@ -557,7 +558,7 @@ export const archiveProjects: ProjectArchive[] = [
       {
         id: "collaboration-deployment",
         title: { zh: "協作與部署", en: "Collaboration and deployment" },
-        body: { zh: "四人團隊使用 GitLab 管理程式碼，依照 Git Flow 組織分支與並行迭代。我編寫 Dockerfile，把應用與執行環境封裝為映像，使用 Docker 降低不同環境之間的設定差異。", en: "The four-person team used GitLab and a Git Flow branch model for parallel iteration. I wrote the Dockerfile and packaged the application with its runtime into an image, reducing configuration differences across environments." },
+        body: { zh: "四人團隊使用 GitLab 管理程式碼，依照 Git Flow 組織分支與並行迭代。部署部分包含編寫 Dockerfile，把應用與執行環境封裝為映像，使用 Docker 降低不同環境之間的設定差異。", en: "The four-person team used GitLab and a Git Flow branch model for parallel iteration. The deployment work included writing the Dockerfile and packaging the application with its runtime into an image to reduce configuration differences across environments." },
         sources: [imageSystemResume],
       },
       {
@@ -578,7 +579,7 @@ export const archiveProjects: ProjectArchive[] = [
     period: "2026—Present",
     status: "secondary",
     accent: "ink",
-    summary: { zh: "我把這個網站當成一個持續整理資料的介面。首頁先呈現專案檔案，詳情頁再把正文、圖表、來源與相關章節放回同一條閱讀路徑；本地搜尋建立內容入口，伺服器端問答則先檢索公開章節，再由 Kimi 整理附有來源的回答。", en: "I use this site as an interface for continuously organizing material. Project archives come first, while detail pages keep writing, figures, sources, and related sections in one reading path. Local search creates entry points, while server-side Q&A retrieves public sections before Kimi organizes a cited answer." },
+    summary: { zh: "Knowledge Atlas 是持續整理資料的介面。首頁先呈現專案檔案，詳情頁再把正文、圖表、來源與相關章節放回同一條閱讀路徑；本地搜尋建立內容入口，伺服器端問答則先檢索公開章節，再由 Kimi 整理附有來源的回答。", en: "Knowledge Atlas serves as an interface for continuously organizing material. Project archives come first, while detail pages keep writing, figures, sources, and related sections in one reading path. Local search creates entry points, while server-side Q&A retrieves public sections before Kimi organizes a cited answer." },
     tags: ["Next.js 16", "React 19", "TypeScript", "Orama", "cmdk", "Motion", "Kimi API"],
     sections: [
       {
@@ -677,6 +678,7 @@ export const curriculumGroups: CurriculumGroup[] = [
       { zh: "Java 語言與系統設計", en: "Java and system design" },
       { zh: "資料結構與演算法", en: "Data structures and algorithms" },
       { zh: "軟體工程", en: "Software engineering" },
+      { zh: "移動應用開發", en: "Mobile application development" },
     ],
     source: curriculumPlan,
   },
@@ -721,21 +723,22 @@ export const curriculumGroups: CurriculumGroup[] = [
 export const internships: InternshipRecord[] = [
   {
     period: "2026.01.01—2026.05.29",
-    company: { zh: "長沙空中靈鳥智能科技有限公司", en: "Changsha Kongzhong Lingniao Intelligent Technology Co., Ltd." },
+    company: { zh: "長沙空中翼身智能科技有限公司", en: "Changsha Kongzhong Lingniao Intelligent Technology Co., Ltd." },
     detail: { zh: "集群智能事業部 · 實習生", en: "Swarm Intelligence Division · Intern" },
-    note: { zh: "實習鑑定記錄我在工作中保持勤奮，做事嚴謹；遇到不熟悉的問題時，會向有經驗的同事請教。", en: "The internship assessment records a diligent and careful working approach, including asking experienced colleagues when encountering unfamiliar problems." },
+    note: { zh: "在工作中保持勤奮，做事嚴謹；遇到不熟悉的問題時，會向有經驗的同事請教。", en: "The internship assessment records a diligent and careful working approach, including asking experienced colleagues when encountering unfamiliar problems." },
   },
 ];
 
 export const publicProfile: PublicProfile = {
+  name: { zh: "李文迪", en: "李文迪" },
   title: { zh: "個人資料", en: "Profile" },
   intro: {
-    zh: "我已完成中南大學計算機科學與技術本科學習並取得學位。這裡整理我的教育背景、專案方向與公開經歷。",
-    en: "I completed a BSc in Computer Science and Technology at Central South University. This profile summarizes my education, project directions, and public experience.",
+    zh: "已完成中南大學計算機科學與技術本科學習並取得學位。此頁整理教育背景、專案方向與公開經歷。",
+    en: "BSc in Computer Science and Technology completed at Central South University. This profile summarizes education, project directions, and public experience.",
   },
   background: {
-    zh: "我的學習與專案主要涉及大型語言模型、視覺感知與無人機控制，也包括 Web、移動端與服務端系統實作。Knowledge Atlas 按照來源整理每個專案的設計、實驗、分工與限制。",
-    en: "My study and project work mainly cover language models, visual perception, and UAV control, alongside practical web, mobile, and server systems. Knowledge Atlas organizes each project's design, experiments, responsibilities, and limits around its sources.",
+    zh: "學習與專案主要涉及大型語言模型、視覺感知與無人機控制，也包括 Web、移動端與服務端系統實作。Knowledge Atlas 按照來源整理每個專案的設計、實驗、分工與限制。",
+    en: "Study and project work mainly cover language models, visual perception, and UAV control, alongside practical web, mobile, and server systems. Knowledge Atlas organizes each project's design, experiments, responsibilities, and limits around its sources.",
   },
   focusAreas: [
     { zh: "大型語言模型進入真實系統", en: "Language models in real systems" },
@@ -779,7 +782,7 @@ export const recommendedQuestions: Bilingual[] = [
   { zh: "這裡的 strike 任務具體指什麼？", en: "What does the strike task mean here?" },
   { zh: "這份檔案的限制與下一步是什麼？", en: "What are the archive's limits and next steps?" },
   { zh: "圖片管理系統如何完成掃碼登入？", en: "How does the image system implement QR login?" },
-  { zh: "四人團隊中我負責哪些工作？", en: "What did I own in the four-person team?" },
+  { zh: "四人團隊如何分工？", en: "How was work divided in the four-person team?" },
   { zh: "Knowledge Atlas 如何組織專案與來源？", en: "How does Knowledge Atlas organize projects and sources?" },
   { zh: "Knowledge Atlas 下一階段準備加入什麼？", en: "What is planned for the next stage of Knowledge Atlas?" },
 ];
@@ -789,7 +792,7 @@ export type ChatAnswer = { text: Bilingual; sources: ChatSource[] };
 
 export const chatAnswers: ChatAnswer[] = [
   {
-    text: { zh: "大型語言模型適合處理自然語言任務、目標解釋與策略候選，但不宜直接擁有飛行執行權。我把它放在高層決策，再讓規則、感知、控制與安全層一起檢查動作；模型保有彈性，執行邊界也不會只靠一次生成結果。", en: "A language model is useful for natural-language missions, target interpretation, and strategy candidates, but it should not own flight execution directly. This system places it at high-level decision, then lets rules, perception, control, and safety jointly check the action. Flexibility remains, while execution does not depend on a single generation." },
+    text: { zh: "大型語言模型適合處理自然語言任務、目標解釋與策略候選，但不宜直接擁有飛行執行權。系統將模型置於高層決策，再由規則、感知、控制與安全層共同檢查動作；模型保有彈性，執行邊界也不會只靠一次生成結果。", en: "A language model is useful for natural-language missions, target interpretation, and strategy candidates, but it should not own flight execution directly. This system places it at high-level decision, then lets rules, perception, control, and safety jointly check the action. Flexibility remains, while execution does not depend on a single generation." },
     sources: [{ title: { zh: "四層系統架構", en: "Four-layer architecture" }, detail: { zh: "論文第 3 章 · 感知／決策／控制／安全", en: "Thesis chapter 3 · perception / decision / control / safety" }, type: "project" }],
   },
   {
@@ -825,7 +828,7 @@ export const chatAnswers: ChatAnswer[] = [
     sources: [{ title: { zh: "掃碼登入與持久化鑑權", en: "QR login and persistent authentication" }, detail: { zh: "圖片管理系統答辯簡報／個人履歷", en: "Image management presentation / personal resume" }, type: "project" }],
   },
   {
-    text: { zh: "這是四人團隊專案，我的角色是後端開發。我負責掃碼與持久化登入、阿里雲 OSS 與敏感資訊過濾，並使用 GitLab／Git Flow 協作，編寫 Dockerfile 完成容器化部署；PC 與 Android 端等團隊交付不會全部歸為我的個人成果。", en: "This was a four-person team project and my role was backend development. I owned QR and persistent login, Alibaba Cloud OSS and sensitive-content filtering, GitLab / Git Flow collaboration, and the Dockerfile-based deployment. The team's PC and Android delivery is not presented as entirely my individual work." },
+    text: { zh: "這是四人團隊專案，個人角色為後端開發，負責掃碼與持久化登入、阿里雲 OSS 與敏感資訊過濾，並使用 GitLab／Git Flow 協作，編寫 Dockerfile 完成容器化部署；PC 與 Android 端等團隊交付不會全部歸為個人成果。", en: "This was a four-person team project. The documented role covered backend development, including QR and persistent login, Alibaba Cloud OSS and sensitive-content filtering, GitLab / Git Flow collaboration, and Dockerfile-based deployment. The team's PC and Android delivery is not presented as entirely individual work." },
     sources: [{ title: { zh: "團隊角色與主要工作", en: "Team role and primary contributions" }, detail: { zh: "個人履歷 · 圖片管理系統", en: "Personal resume · Image Management System" }, type: "archive" }],
   },
   {

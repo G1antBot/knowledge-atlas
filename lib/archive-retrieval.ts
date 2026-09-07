@@ -3,6 +3,7 @@ import * as OpenCCLocale from "opencc-js/preset";
 
 import {
   archiveProjects,
+  curriculumGroups,
   publicContact,
   publicProfile,
   type ArchiveSection,
@@ -24,7 +25,7 @@ const SYSTEM_PROMPT_RULES = [
   "只根据下方提供的资料回答问题。",
   "回答必须标注引用了哪一项公开资料。",
   "如果资料中没有相关内容，必须明确说明“档案中未收录”，不得编造。",
-  "当资料类型是个人简介时，以网站主人第一人称介绍，不要把模型自身的身份或经历写成网站主人的资料。",
+  "当资料类型是个人简介时，使用客观叙述，不要求网站主人使用第一人称；资料明确提供姓名时可以称呼该姓名，严禁把模型自身的身份或经历混入网站主人的资料。",
   "只有下方明确提供联络方式资料时，才可以回答电话或邮箱；否则不得提供、猜测或补全联络方式。",
 ].join("\n");
 
@@ -118,7 +119,10 @@ type ArchiveCandidate = CandidateBase & {
   subsection?: ArchiveSubsection;
 };
 
-type ProfileCandidate = CandidateBase & { kind: "profile" };
+type ProfileCandidate = CandidateBase & {
+  kind: "profile";
+  scope: "profile" | "curriculum";
+};
 type ContactCandidate = CandidateBase & { kind: "contact" };
 type RetrievalCandidate = ArchiveCandidate | ProfileCandidate | ContactCandidate;
 type ScoredCandidate = RetrievalCandidate & { score: number };
@@ -176,14 +180,32 @@ const ARCHIVE_CANDIDATES = archiveProjects.flatMap((project) => project.sections
 
 const PROFILE_CANDIDATE: ProfileCandidate = {
   kind: "profile",
-  titleText: normalizeText(bilingualText(publicProfile.title)),
+  scope: "profile",
+  titleText: normalizeText(`${bilingualText(publicProfile.title)}\n${bilingualText(publicProfile.name)}`),
   tagText: normalizeText("profile about education background internship experience 專案方向 教育背景 公開經歷"),
   bodyText: normalizeText([
+    bilingualText(publicProfile.name),
     bilingualText(publicProfile.intro),
     bilingualText(publicProfile.background),
     ...publicProfile.focusAreas.map(bilingualText),
     ...publicProfile.education.flatMap((item) => [item.period, bilingualText(item.school), bilingualText(item.detail)]),
     ...publicProfile.internships.flatMap((item) => [item.period, bilingualText(item.company), bilingualText(item.detail), bilingualText(item.note)]),
+  ].join("\n")),
+};
+
+const CURRICULUM_CANDIDATE: ProfileCandidate = {
+  kind: "profile",
+  scope: "curriculum",
+  titleText: normalizeText("本科培養脈絡 Undergraduate curriculum"),
+  tagText: normalizeText("curriculum courses 培養方案 課程"),
+  bodyText: normalizeText([
+    ...curriculumGroups.flatMap((group) => [
+      group.index,
+      bilingualText(group.title),
+      bilingualText(group.summary),
+      ...group.courses.map(bilingualText),
+      sourceText([group.source]),
+    ]),
   ].join("\n")),
 };
 
@@ -232,7 +254,9 @@ function hasExplicitContactIntent(normalizedQuestion: string): boolean {
 }
 
 function intentBoost(normalizedQuestion: string, candidate: RetrievalCandidate): number {
-  if (candidate.kind === "profile") return includesIntent(normalizedQuestion, PROFILE_INTENT_TERMS) ? 64 : 0;
+  if (candidate.kind === "profile") {
+    return candidate.scope === "profile" && includesIntent(normalizedQuestion, PROFILE_INTENT_TERMS) ? 64 : 0;
+  }
   if (candidate.kind === "contact") return hasExplicitContactIntent(normalizedQuestion) ? 96 : 0;
 
   const target = candidate.subsection?.id ?? candidate.section.id;
@@ -256,14 +280,17 @@ function scoreCandidate(normalizedQuestion: string, fragments: string[], candida
 
 function sourceFor(candidate: ScoredCandidate): ChatSource {
   if (candidate.kind === "profile") {
+    const isCurriculum = candidate.scope === "curriculum";
     return {
-      title: publicProfile.title,
+      title: isCurriculum
+        ? { zh: "本科培養脈絡", en: "Undergraduate curriculum" }
+        : publicProfile.title,
       detail: {
-        zh: "About · 教育背景、專案方向與公開經歷",
-        en: "About · Education, project directions, and public experience",
+        zh: isCurriculum ? "About · 本科培養脈絡與課程" : "About · 教育背景、專案方向與公開經歷",
+        en: isCurriculum ? "About · Undergraduate curriculum and courses" : "About · Education, project directions, and public experience",
       },
       type: "archive",
-      href: "/about#profile",
+      href: isCurriculum ? "/about#curriculum" : "/about#profile",
     };
   }
 
@@ -302,13 +329,25 @@ function profileMaterial(locale: AskLocale): string {
     .join("\n");
   return [
     "资料类型：个人简介",
-    "回答身份：网站主人第一人称",
+    `姓名：${publicProfile.name[locale]}`,
+    "回答口吻：客观叙述；不得将模型自身身份或经历混入资料",
     `简介：${publicProfile.intro[locale]}`,
     `背景：${publicProfile.background[locale]}`,
     `关注方向：${publicProfile.focusAreas.map((area) => area[locale]).join("；")}`,
     `教育背景：${education}`,
     `公开经历：${internships}`,
     "引用链接：/about#profile",
+  ].join("\n");
+}
+
+function curriculumMaterial(locale: AskLocale): string {
+  const curriculum = curriculumGroups
+    .map((group) => `${group.index}｜${group.title[locale]}｜${group.summary[locale]}｜${group.courses.map((course) => course[locale]).join("、")}`)
+    .join("\n");
+  return [
+    "资料类型：本科培养方案",
+    `培养方案：${curriculum}`,
+    "引用链接：/about#curriculum",
   ].join("\n");
 }
 
@@ -322,7 +361,9 @@ function contactMaterial(locale: AskLocale): string {
 }
 
 function materialFor(candidate: ScoredCandidate, locale: AskLocale): string {
-  if (candidate.kind === "profile") return profileMaterial(locale);
+  if (candidate.kind === "profile") {
+    return candidate.scope === "curriculum" ? curriculumMaterial(locale) : profileMaterial(locale);
+  }
   if (candidate.kind === "contact") return contactMaterial(locale);
 
   const node = candidate.subsection ?? candidate.section;
@@ -344,11 +385,20 @@ function materialFor(candidate: ScoredCandidate, locale: AskLocale): string {
 
 function fallbackFor(candidate: ScoredCandidate): Bilingual {
   if (candidate.kind === "profile") {
-    const compose = (locale: AskLocale) => [
-      publicProfile.intro[locale],
-      publicProfile.background[locale],
-      publicProfile.internships.map((item) => `${item.company[locale]} · ${item.detail[locale]}`).join("\n"),
-    ].filter(Boolean).join("\n\n");
+    if (candidate.scope === "curriculum") {
+      const composeCurriculum = (locale: AskLocale) => curriculumGroups
+        .map((group) => `${group.title[locale]}：${group.courses.map((course) => course[locale]).join("、")}`)
+        .join("\n");
+      return { zh: composeCurriculum("zh"), en: composeCurriculum("en") };
+    }
+    const compose = (locale: AskLocale) => {
+      return [
+        publicProfile.name[locale],
+        publicProfile.intro[locale],
+        publicProfile.background[locale],
+        publicProfile.internships.map((item) => `${item.company[locale]} · ${item.detail[locale]}`).join("\n"),
+      ].filter(Boolean).join("\n\n");
+    };
     return { zh: compose("zh"), en: compose("en") };
   }
 
@@ -375,6 +425,7 @@ export function retrieveArchive(question: string, locale: AskLocale = "zh"): Arc
   const candidates: RetrievalCandidate[] = [
     ...ARCHIVE_CANDIDATES,
     PROFILE_CANDIDATE,
+    CURRICULUM_CANDIDATE,
     ...(contactIntent ? [CONTACT_CANDIDATE] : []),
   ];
   const scored = candidates

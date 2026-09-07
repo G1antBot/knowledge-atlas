@@ -10,15 +10,16 @@ export default function AboutPage() {
   const zh = locale === "zh";
 
   return <div className="page-frame">
-    <section className="page-intro about-reveal">
+    <section className="page-intro about-reveal" id="profile">
       <Eyebrow>About / 03</Eyebrow>
       <h1>ABOUT<br /><span style={{ color: "var(--red)" }}>THE ARCHIVE.</span></h1>
+      <p><strong>{t(publicProfile.name, locale)}</strong></p>
       <p>{t(publicProfile.intro, locale)}</p>
     </section>
 
     <div className="about-grid about-reveal about-reveal-delay-1">
       <div>
-        <section className="about-block" id="profile">
+        <section className="about-block">
           <h2>{zh ? "背景 / Background" : "Background / 背景"}</h2>
           <p>{t(publicProfile.background, locale)}</p>
         </section>
@@ -60,7 +61,7 @@ export default function AboutPage() {
       </div>
     </div>
 
-    <section className="curriculum-section about-reveal about-reveal-delay-2" aria-labelledby="curriculum-heading">
+    <section className="curriculum-section about-reveal about-reveal-delay-2" id="curriculum" aria-labelledby="curriculum-heading">
       <div className="curriculum-heading">
         <Eyebrow tone="blue">Curriculum / 04</Eyebrow>
         <h2 id="curriculum-heading">{zh ? "本科培養脈絡" : "Undergraduate curriculum"}</h2>

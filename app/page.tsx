@@ -17,7 +17,7 @@ export default function HomePage() {
       <div className="swiss-hero-grid">
         <div className="swiss-hero-number">00</div>
         <div><h1 id="home-title">KNOWLEDGE<br /><span>ARCHIVE</span></h1><p className="swiss-hero-cn">{zh ? "個人知識系統" : "Personal knowledge system"}</p></div>
-        <div className="swiss-hero-note"><p>{zh ? "這裡整理我做過的專案、讀過的論文與實驗記錄。可以先閱讀檔案，也可以直接提出問題。" : "Projects, thesis material, and experiment records are the base units. Browse the archive first, then enter details through source-aware questions."}</p><SourceTag>{zh ? "目前主檔案：無人機控制演算法" : "Primary record: UAV control algorithm"}</SourceTag></div>
+        <div className="swiss-hero-note"><p>{zh ? "這裡整理專案、論文與實驗記錄。可以先閱讀檔案，也可以直接提出問題。" : "Projects, thesis material, and experiment records are the base units. Browse the archive first, then enter details through source-aware questions."}</p><SourceTag>{zh ? "目前主檔案：無人機控制演算法" : "Primary record: UAV control algorithm"}</SourceTag></div>
       </div>
     </section>
 
