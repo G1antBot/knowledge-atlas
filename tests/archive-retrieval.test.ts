@@ -170,3 +170,11 @@ test("unsupported technical material does not pull an unrelated named project", 
   assert.ok(hrefs.includes("/projects/uav-recognition-strike-control#watchdog"));
   assert.equal(hrefs.some((href) => href.startsWith("/projects/knowledge-atlas#")), false);
 });
+
+test("answer rules preserve uncertainty and use focused plain text", () => {
+  const { prompt } = retrieveArchive("无人机做过室外实飞吗？", "zh");
+  assert.match(prompt, /不得推断成/);
+  assert.match(prompt, /不得自动断言它不是硬件在环/);
+  assert.match(prompt, /只回答用户实际询问的内容/);
+  assert.match(prompt, /不要使用 Markdown 标题/);
+});
