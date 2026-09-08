@@ -11,12 +11,26 @@ import { Arrow, Coord, Eyebrow, SourceTag } from "@/components/ui";
 
 function SourceList({ sources }: { sources: ProjectArchive["sources"] }) {
   const { locale } = useLocale();
-  return <div className="source-list">{sources.map((source) => {
+  const uniqueSources = sources.filter((source, index) => sources.findIndex((item) => item.label.zh === source.label.zh && item.href === source.href) === index);
+  return <div className="source-list">{uniqueSources.map((source) => {
     const content = <><SourceTag>{source.kind.toUpperCase()} / {t(source.label, locale)}</SourceTag>{source.note && <p>{t(source.note, locale)}</p>}</>;
     return source.href
-      ? <a className="source-card source-card-link" href={source.href} target="_blank" rel="noreferrer" key={source.label.zh}>{content}<span aria-hidden="true">↗</span></a>
+      ? source.href.startsWith("/")
+        ? <Link className="source-card source-card-link" href={source.href} key={source.label.zh}>{content}<span aria-hidden="true">↗</span></Link>
+        : <a className="source-card source-card-link" href={source.href} target="_blank" rel="noreferrer" key={source.label.zh}>{content}<span aria-hidden="true">↗</span></a>
       : <div className="source-card" key={source.label.zh}>{content}</div>;
   })}</div>;
+}
+
+function ProjectOverview({ overview }: { overview: ArchiveSection }) {
+  const { locale } = useLocale();
+  return <section className="project-overview" id={overview.id} aria-labelledby="overview-heading">
+    <div className="project-overview-heading"><Eyebrow>Overview / 00</Eyebrow><h2 id="overview-heading">{t(overview.title, locale)}</h2></div>
+    <div className="project-overview-body"><p>{t(overview.body, locale)}</p>
+      {overview.points && <ul>{overview.points.map((point) => <li key={point.zh}>{t(point, locale)}</li>)}</ul>}
+      <details className="overview-sources"><summary>{locale === "zh" ? "依據與延伸閱讀" : "Evidence and further reading"}</summary><SourceList sources={overview.sources} /></details>
+    </div>
+  </section>;
 }
 
 function FigureGrid({ figures, anchorPrefix }: { figures: ArchiveFigure[]; anchorPrefix: string }) {
@@ -87,6 +101,7 @@ export function ProjectDetail({ project }: { project: ProjectArchive }) {
       <div className="project-hero-summary"><p>{t(project.summary, locale)}</p><div className="project-hero-tags">{project.tags.map((tag) => <span className="tag" key={tag}>{tag}</span>)}</div></div>
     </section>
 
+    {project.overview && <ProjectOverview overview={project.overview} />}
     {hasCompleteArchive ? <>
       <ArchiveDirectory sections={project.sections} locale={locale} />
       <article className="editorial-article">{project.sections.map((section, index) => <ArchiveSectionView key={section.id} section={section} index={index} />)}

@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
-import { chatAnswers, recommendedQuestions, type ChatSource } from "@/data/content";
+import { recommendedQuestions, type ChatSource } from "@/data/content";
 import { useLocale } from "@/components/locale-context";
 import { t } from "@/lib/i18n";
 import { ASK_ERROR_STATUS, isAskErrorCode, type AskErrorCode, type AskErrorResponse, type AskStreamEvent } from "@/lib/ask-protocol";
-
-type Message = { role: "user" | "assistant"; text: string; sources?: ChatSource[]; index?: number };
+import { isCompleteAnswer, markAnswer, type Message } from "@/lib/answer-state";
 type AskInterfaceProps = { variant?: "panel" | "full" };
 type AskErrorState = { code: AskErrorCode; message: string };
 
@@ -169,7 +168,11 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
     abortRef.current?.abort();
     abortRef.current = null;
     setStreaming(false);
-    if (wasStreaming) setLiveMessage(zh ? "已停止回答" : "Answer stopped");
+    if (wasStreaming) {
+      const stoppedIndex = answerRef.current;
+      setMessages((current) => markAnswer(current, stoppedIndex, "incomplete"));
+      setLiveMessage(zh ? "已停止回答" : "Answer stopped");
+    }
   }
 
   async function submit(value = question) {
@@ -187,7 +190,7 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
       const next: Message[] = [
         ...current,
         { role: "user", text: clean },
-        { role: "assistant", text: "", sources: [], index: messageIndex },
+        { role: "assistant", text: "", sources: [], index: messageIndex, status: "streaming" },
       ];
       const limited = next.slice(-MAX_CONVERSATION_MESSAGES);
       return limited[0]?.role === "assistant" ? limited.slice(1) : limited;
@@ -277,10 +280,12 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
           } else if (event.type === "done") {
             flushPendingText();
             completed = true;
+            setMessages((current) => markAnswer(current, messageIndex, "complete"));
             setLiveMessage(zh ? "回答已完成" : "Answer complete");
           } else if (event.type === "error") {
             flushPendingText();
             streamFailed = true;
+            setMessages((current) => markAnswer(current, messageIndex, "incomplete"));
             setError({ code: event.code, message: event.message });
             setLiveMessage(zh ? "回答暫時無法完成" : "Answer could not be completed");
           }
@@ -288,11 +293,12 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
 
         if (done) break;
       }
-      if (ownsRequest() && !completed && !streamFailed) setLiveMessage(zh ? "回答已完成" : "Answer complete");
+      if (ownsRequest() && !completed && !streamFailed) throw new Error("Incomplete answer stream");
     } catch {
       if (!ownsRequest()) return;
       flushPendingText();
       removeEmptyAnswer();
+      setMessages((current) => markAnswer(current, messageIndex, "incomplete"));
       setError({
         code: "service-unavailable",
         message: zh ? "無法連接公開資料服務，請稍後再試。" : "The public materials service could not be reached. Try again later.",
@@ -364,7 +370,7 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
 
         <div className="llm-sidebar-foot">
           <div><span className={`llm-live-dot ${streaming ? "is-streaming" : ""}`} /><b>{streaming ? (zh ? "正在整理回答" : "Composing answer") : (zh ? "公開資料已就緒" : "Public materials ready")}</b></div>
-          <p>{zh ? "回答先檢索公開資料；啟用 Kimi 時由模型整理，並保留引用章節。" : "Answers retrieve public materials first; when Kimi is enabled, it organizes the response with citations."}</p>
+          <p>{zh ? "每次提問獨立檢索公開資料，再由 Kimi 整理並附上引用章節。" : "Each question independently retrieves public material before Kimi composes a cited answer."}</p>
         </div>
       </aside>
 
@@ -392,11 +398,11 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
             {messages.map((message, index) => <article className={`llm-message llm-message-${message.role}`} key={`${message.role}-${index}`}>
               <div className="llm-avatar" aria-hidden="true">{message.role === "user" ? (zh ? "訪" : "V") : "KA"}</div>
               <div className="llm-message-body">
-                <div className="llm-message-name"><strong>{message.role === "user" ? (zh ? "訪客" : "Visitor") : "Knowledge Atlas"}</strong>{message.role === "assistant" && <span>{zh ? "根據公開資料" : "From public materials"}</span>}</div>
+                <div className="llm-message-name"><strong>{message.role === "user" ? (zh ? "訪客" : "Visitor") : "Knowledge Atlas"}</strong>{message.role === "assistant" && <span>{message.status === "incomplete" ? (zh ? "回答未完成，請勿作為完整結論" : "Incomplete answer — do not treat as a complete conclusion") : (zh ? "根據公開資料" : "From public materials")}</span>}</div>
                 <div className="llm-message-copy">{message.text}{message.role === "assistant" && streaming && index === latestAssistantIndex && <span className="cursor" />}</div>
-                {message.role === "assistant" && !streaming && message.text && <>
+                {isCompleteAnswer(message) && <>
                   {message.sources && message.sources.length > 0 && <div className="llm-citations"><p>{zh ? "引用資料" : "Sources"}</p>{message.sources.map((source, sourceIndex) => <Link href={getSourceHref(source)} key={`${source.title.zh}-${sourceIndex}`}><b>{String(sourceIndex + 1).padStart(2, "0")}</b><span><strong>{t(source.title, locale)}</strong><small>{t(source.detail, locale)}</small></span><i aria-hidden="true">↗</i></Link>)}</div>}
-                  <div className="llm-response-actions"><button type="button" onClick={() => void copyAnswer(message.text)}>{zh ? "複製" : "Copy"}</button><button type="button" onClick={() => setFeedback(zh ? "已記錄：這份回答有幫助" : "Recorded as helpful")}>{zh ? "有幫助" : "Helpful"}</button><button type="button" onClick={() => setFeedback(zh ? "已記錄：這份回答需要修正" : "Recorded for correction")}>{zh ? "需要修正" : "Needs correction"}</button></div>
+                  <div className="llm-response-actions"><button type="button" onClick={() => void copyAnswer(message.text)}>{zh ? "複製" : "Copy"}</button></div>
                 </>}
               </div>
             </article>)}
@@ -409,11 +415,11 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
 
         <div className="llm-composer-dock">
           <form className="llm-composer" onSubmit={(event) => { event.preventDefault(); submit(); }}>
-            <textarea ref={textareaRef} value={question} onChange={(event) => setQuestion(event.target.value)} onInput={(event) => { event.currentTarget.style.height = "auto"; event.currentTarget.style.height = `${Math.min(event.currentTarget.scrollHeight, 160)}px`; }} onKeyDown={handleComposerKeyDown} placeholder={zh ? "詢問專案、設計選擇或檔案來源……" : "Ask about a project, design choice, or source..."} aria-label={zh ? "輸入問題" : "Question input"} rows={1} disabled={streaming} />
+            <textarea ref={textareaRef} value={question} onChange={(event) => setQuestion(event.target.value)} onInput={(event) => { event.currentTarget.style.height = "auto"; event.currentTarget.style.height = `${Math.min(event.currentTarget.scrollHeight, 160)}px`; }} onKeyDown={handleComposerKeyDown} placeholder={zh ? "詢問負責內容、完成情況或設計選擇……" : "Ask about contributions, results, or design choices..."} aria-label={zh ? "輸入問題" : "Question input"} rows={1} disabled={streaming} />
             <div className="llm-composer-meta"><span><i />{zh ? "檢索範圍：專案檔案與個人資料" : "Scope: project archives and profile"}</span><span>{zh ? "Enter 送出 · Shift + Enter 換行" : "Enter to send · Shift + Enter for a new line"}</span></div>
             <button className={`llm-send ${streaming ? "is-stop" : ""}`} type={streaming ? "button" : "submit"} onClick={streaming ? stopStream : undefined} disabled={!streaming && !question.trim()} aria-label={streaming ? (zh ? "停止整理" : "Stop") : (zh ? "送出問題" : "Send question")}><span aria-hidden="true">{streaming ? "■" : "↑"}</span></button>
           </form>
-          <p>{zh ? "啟用模型時，問題會傳送至 Kimi API；請勿輸入個人或機密資訊，並以引用章節為準。" : "When the model is enabled, questions are sent to the Kimi API. Do not enter personal or confidential information; verify answers against cited sections."}</p>
+          <p>{zh ? "問題會傳送至 Kimi API；請勿輸入個人或機密資訊，並以引用章節為準。" : "Questions are sent to the Kimi API. Do not enter personal or confidential information; verify answers against cited sections."}</p>
         </div>
       </section>
     </div>;
@@ -424,12 +430,12 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
       <div className="console-bar"><span>ASK / ARCHIVE CHANNEL</span><span className="console-status"><i className={`status-dot ${streaming ? "live" : ""}`} />{streaming ? "STREAMING" : "READY"}</span></div>
       <div className="conversation">
         <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{liveMessage}</div>
-        <p className="console-disclaimer">{zh ? "啟用模型時，問題會傳送至 Kimi API，並只使用檢索到的公開資料片段整理回答；請勿輸入個人或機密資訊。" : "When the model is enabled, questions are sent to the Kimi API and answered only from retrieved public material excerpts. Do not enter personal or confidential information."}</p>
+        <p className="console-disclaimer">{zh ? "問題會傳送至 Kimi API，並只使用檢索到的公開資料片段整理回答；請勿輸入個人或機密資訊。" : "Questions are sent to the Kimi API and answered only from retrieved public material excerpts. Do not enter personal or confidential information."}</p>
         {messages.length === 0 && <><p className="console-intro">{zh ? "可以詢問架構、控制流程、資料來源，或某項設計為何這樣安排。回答會引用對應的專案章節。" : "Ask about the architecture, control flow, sources, or why a design choice was made. Answers cite the relevant project sections."} <Link href="/about#profile">{zh ? "先了解個人背景" : "Read the profile"} ↗</Link></p><button className="console-intro-suggestion" type="button" onClick={() => submit(t(introSuggestion, locale))}>{t(introSuggestion, locale)}<span aria-hidden="true">↗</span></button></>}
         {messages.map((message, index) => <div className="message" key={`${message.role}-${index}`}>
-          <div className="message-label">{message.role === "user" ? (zh ? "YOU / 訪客" : "YOU / Visitor") : (zh ? "ATLAS / 公開資料" : "ATLAS / Public materials")}</div>
+          {message.status === "incomplete" && <p role="status">{zh ? "回答未完成，請勿作為完整結論。" : "Incomplete answer — do not treat as a complete conclusion."}</p>}<div className="message-label">{message.role === "user" ? (zh ? "YOU / 訪客" : "YOU / Visitor") : (zh ? "ATLAS / 公開資料" : "ATLAS / Public materials")}</div>
           <div className={message.role === "user" ? "message-user" : "message-assistant"}>{message.text}{message.role === "assistant" && streaming && index === messages.length - 1 && <span className="cursor" />}</div>
-          {message.role === "assistant" && !streaming && message.text && <div className="feedback-row"><button className="tiny-action" type="button" onClick={() => void copyAnswer(message.text)}>{zh ? "複製回答" : "Copy"}</button><button className="tiny-action" type="button" onClick={() => setFeedback(zh ? "感謝回饋" : "Thanks")}>{zh ? "有幫助" : "Helpful"}</button><button className="tiny-action" type="button" onClick={() => setFeedback(zh ? "已記錄" : "Noted")}>{zh ? "需修正" : "Needs correction"}</button></div>}
+          {isCompleteAnswer(message) && <div className="feedback-row"><button className="tiny-action" type="button" onClick={() => void copyAnswer(message.text)}>{zh ? "複製回答" : "Copy"}</button></div>}
         </div>)}
         {streaming && <button className="tiny-action" type="button" onClick={stopStream}>{zh ? "停止整理" : "Stop"}</button>}
         {error && <div className="console-error" role="alert">{error.message}</div>}
@@ -438,9 +444,8 @@ export function AskInterface({ variant = "panel" }: AskInterfaceProps) {
       <form className="console-controls" onSubmit={(event) => { event.preventDefault(); submit(); }}><textarea className="console-input" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder={zh ? "輸入問題……" : "Ask a question..."} aria-label={zh ? "輸入問題" : "Question input"} rows={2} disabled={streaming} /><button className="console-button" type="submit" disabled={streaming || !question.trim()}>{zh ? "送出" : "Send"}</button><button className="console-button secondary" type="button" onClick={clearConversation}>{zh ? "清空" : "Clear"}</button></form>
     </section>
     <aside>
-      <div className="question-bank"><h2>{zh ? "可以從這些問題開始" : "Questions to start with"}</h2><p>{zh ? "每個回答都會附上對應的公開資料章節。" : "Each answer includes the public material section it comes from."}</p><div className="question-list">{recommendedQuestions.map((item) => <button className="question-button" type="button" key={item.zh} onClick={() => submit(t(item, locale))} disabled={streaming}>{t(item, locale)}<span className="arrow">↗</span></button>)}</div></div>
-      {messages.some((message) => message.role === "assistant" && message.text) && <div className="source-cards"><h2>{zh ? "回答引用 / Sources" : "Sources / 回答引用"}</h2>{messages.filter((message) => message.role === "assistant").slice(-1).flatMap((message) => message.sources ?? []).map((source, index) => <div className="source-card" key={`${source.title.zh}-${index}`}><span>{source.type.toUpperCase()} / SOURCE {String(index + 1).padStart(2, "0")}</span><strong>{t(source.title, locale)}</strong><span>{t(source.detail, locale)}</span></div>)}</div>}
-      {chatAnswers.length > 0 && <p className="coord" style={{ marginTop: 28 }}>LOCAL INDEX / {chatAnswers.length} ANSWER PATTERNS / PUBLIC MATERIALS</p>}
+      <div className="question-bank"><h2>{zh ? "可以從這些問題開始" : "Questions to start with"}</h2><p>{zh ? "每個回答都會附上對應的公開資料章節。" : "Each answer includes the public material section it comes from."}</p><div className="question-list">{recommendedQuestions.slice(0, 6).map((item) => <button className="question-button" type="button" key={item.zh} onClick={() => submit(t(item, locale))} disabled={streaming}>{t(item, locale)}<span className="arrow">↗</span></button>)}</div></div>
+      {messages.some(isCompleteAnswer) && <div className="source-cards"><h2>{zh ? "回答引用 / Sources" : "Sources / 回答引用"}</h2>{messages.filter((message) => message.role === "assistant").slice(-1).flatMap((message) => isCompleteAnswer(message) ? message.sources ?? [] : []).map((source, index) => <Link className="source-card source-card-link" href={getSourceHref(source)} key={`${source.title.zh}-${index}`}><span>{source.type.toUpperCase()} / SOURCE {String(index + 1).padStart(2, "0")}</span><strong>{t(source.title, locale)}</strong><span>{t(source.detail, locale)}</span><span aria-hidden="true"> ↗</span></Link>)}</div>}
     </aside>
   </div>;
 }

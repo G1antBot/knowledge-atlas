@@ -36,6 +36,6 @@ function ShellContent({ children }: { children: React.ReactNode }) {
       </div>
     </header>
     <main>{children}</main>
-    <footer className="site-footer"><div><span className="footer-signal" />{locale === "zh" ? "個人 AI 知識系統 / 前端原型" : "Personal AI knowledge system / front-end prototype"}</div><div className="footer-meta"><span>{locale === "zh" ? "檔案狀態：持續整理" : "Archive status: in progress"}</span><span>{new Date().getFullYear()}</span></div></footer>
+    <footer className="site-footer"><div><span className="footer-signal" />{locale === "zh" ? "個人知識檔案與問答" : "Personal knowledge archive & Q&A"}</div><div className="footer-meta"><span>{locale === "zh" ? "檔案狀態：持續整理" : "Archive status: in progress"}</span><span>{new Date().getFullYear()}</span></div></footer>
   </div>;
 }

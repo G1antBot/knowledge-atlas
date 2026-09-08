@@ -1,7 +1,12 @@
 import { create, insertMultiple, search, type Results } from "@orama/orama";
+import * as OpenCC from "opencc-js/core";
+import * as OpenCCLocale from "opencc-js/preset";
 import type { ArchiveFigure, ArchiveSection, ArchiveSubsection, Bilingual, MediaAsset, ProjectArchive, SourceRef } from "@/data/content";
 
 export const ARCHIVE_SEARCH_LIMIT = 12;
+
+const toTraditional = OpenCC.ConverterFactory(OpenCCLocale.from.cn, OpenCCLocale.to.tw);
+const toSimplified = OpenCC.ConverterFactory(OpenCCLocale.from.tw, OpenCCLocale.to.cn);
 
 type ArchiveSearchSchema = {
   title: "string";
@@ -75,6 +80,8 @@ export type ArchiveSearchHit = {
 
 type ArchiveSearchDatabase = ReturnType<typeof create<ArchiveSearchSchema>>;
 
+type ProjectArchiveWithOverview = ProjectArchive & { overview?: ArchiveSection };
+
 export type ArchiveSearchIndex = {
   readonly database: ArchiveSearchDatabase;
   readonly documents: readonly ArchiveSearchDocument[];
@@ -92,7 +99,11 @@ function sourceText(sources: SourceRef[]): string {
 
 function searchableText(values: string[]): string {
   const text = values.join("\n");
-  const cjkRuns = text.match(/[\u3400-\u9fff]+/g) ?? [];
+  // Public copy is primarily Traditional Chinese. Index both Chinese forms so
+  // browser search behaves consistently for simplified, traditional, and Latin
+  // queries without adding a second search engine.
+  const bilingualText = `${text}\n${toTraditional(text)}\n${toSimplified(text)}`;
+  const cjkRuns = bilingualText.match(/[\u3400-\u9fff]+/g) ?? [];
   const cjkGrams = cjkRuns.flatMap((run) => {
     const characters = Array.from(run);
     const grams = new Set<string>();
@@ -103,7 +114,7 @@ function searchableText(values: string[]): string {
     }
     return Array.from(grams);
   });
-  return `${text}\n${cjkGrams.join(" ")}`;
+  return `${bilingualText}\n${cjkGrams.join(" ")}`;
 }
 
 function documentSearchText(title: string, subtitle: string, summary: string, tags: string[], sectionTitle: string, sectionBody: string, source: string): string {
@@ -163,6 +174,18 @@ function sectionDocument(project: ProjectArchive, section: ArchiveSection, secti
     targetId: section.id,
     nodeType: "section",
     order: Number(project.index) * 100 + sectionIndex + 1,
+  };
+}
+
+function overviewDocument(project: ProjectArchive, overview: ArchiveSection): ArchiveSearchDocument {
+  const document = sectionDocument(project, overview, -1);
+  return {
+    ...document,
+    id: `overview:${project.slug}`,
+    nodeType: "section",
+    // Keep numbered chapter ordering and counts unchanged; overview is a
+    // project-level anchor that appears immediately before chapter 1.
+    order: Number(project.index) * 100 - 0.5,
   };
 }
 
@@ -267,10 +290,14 @@ function sectionDocuments(project: ProjectArchive, section: ArchiveSection, sect
 }
 
 function documentList(projects: ProjectArchive[]): ArchiveSearchDocument[] {
-  return projects.flatMap((project) => [
-    projectDocument(project),
-    ...project.sections.flatMap((section, sectionIndex) => sectionDocuments(project, section, sectionIndex)),
-  ]);
+  return projects.flatMap((project) => {
+    const withOverview = project as ProjectArchiveWithOverview;
+    return [
+      projectDocument(project),
+      ...(withOverview.overview ? [overviewDocument(project, withOverview.overview)] : []),
+      ...project.sections.flatMap((section, sectionIndex) => sectionDocuments(project, section, sectionIndex)),
+    ];
+  });
 }
 
 export function createArchiveSearchIndex(projects: ProjectArchive[]): ArchiveSearchIndex {
@@ -312,9 +339,9 @@ function resultHits(results: Results<ArchiveSearchDocument>): ArchiveSearchHit[]
 }
 
 function fallbackHits(index: ArchiveSearchIndex, term: string, limit: number): ArchiveSearchHit[] {
-  const normalizedTerm = term.toLocaleLowerCase();
+  const searchTerms = new Set([term, toTraditional(term), toSimplified(term)].map((value) => value.toLocaleLowerCase()));
   return index.documents
-    .filter((document) => document.searchText.toLocaleLowerCase().includes(normalizedTerm))
+    .filter((document) => Array.from(searchTerms).some((value) => document.searchText.toLocaleLowerCase().includes(value)))
     .slice(0, limit)
     .map((document) => toHit({ id: document.id, score: 0.01, document }));
 }
@@ -324,15 +351,22 @@ export function searchArchive(index: ArchiveSearchIndex, query: string, limit = 
   if (!term) return [];
 
   const safeLimit = Math.min(Math.max(limit, 1), ARCHIVE_SEARCH_LIMIT);
-  const results = search<ArchiveSearchDatabase, ArchiveSearchDocument>(index.database, {
-    term,
-    properties: ["title", "subtitle", "summary", "tags", "sectionTitle", "sectionBody", "source", "searchText"],
-    limit: safeLimit,
-    tolerance: 1,
-    boost: { title: 2, sectionTitle: 1.6, tags: 1.4, subtitle: 1.15 },
-  });
-
-  const hits = resultHits(results as Results<ArchiveSearchDocument>);
+  const variants = Array.from(new Set([term, toTraditional(term), toSimplified(term)]));
+  const byId = new Map<string, ArchiveSearchHit>();
+  for (const variant of variants) {
+    const results = search<ArchiveSearchDatabase, ArchiveSearchDocument>(index.database, {
+      term: variant,
+      properties: ["title", "subtitle", "summary", "tags", "sectionTitle", "sectionBody", "source", "searchText"],
+      limit: safeLimit,
+      tolerance: 1,
+      boost: { title: 2, sectionTitle: 1.6, tags: 1.4, subtitle: 1.15 },
+    });
+    for (const hit of resultHits(results as Results<ArchiveSearchDocument>)) {
+      const existing = byId.get(hit.id);
+      if (!existing || hit.score > existing.score) byId.set(hit.id, hit);
+    }
+  }
+  const hits = Array.from(byId.values()).sort((left, right) => right.score - left.score).slice(0, safeLimit);
   return hits.length > 0 ? hits : fallbackHits(index, term, safeLimit);
 }
 

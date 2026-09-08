@@ -1,4 +1,3 @@
-import { mockFailure } from "@/lib/mock-chat";
 import { retrieveArchive } from "@/lib/archive-retrieval";
 import {
   ASK_ERROR_STATUS,
@@ -17,14 +16,13 @@ const MAX_QUESTION_LENGTH = 500;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX_REQUESTS = 12;
 const STREAM_TIMEOUT_MS = 30_000;
-const MOCK_CHAR_DELAY_MS = 22;
 const RATE_LIMIT_MAX_KEYS = 1_000;
 const KIMI_ENDPOINTS = [
   "https://api.moonshot.cn/v1/chat/completions",
   "https://api.moonshot.ai/v1/chat/completions",
 ] as const;
 const KIMI_DEFAULT_MODEL = "kimi-k2.6";
-const KIMI_MAX_COMPLETION_TOKENS = 500;
+const KIMI_MAX_COMPLETION_TOKENS = 900;
 
 const errorMessages: Record<AskErrorCode, Bilingual> = {
   "invalid-request": {
@@ -114,97 +112,13 @@ function streamHeaders(): HeadersInit {
   };
 }
 
-function streamResponse(request: Request, sources: ChatSource[], answer: string, locale: AskLocale): Response {
-  const encoder = new TextEncoder();
-  const upstreamController = new AbortController();
-  let streamCancelled = false;
-  let timeoutId: ReturnType<typeof globalThis.setTimeout> | undefined;
-  let charTimerId: ReturnType<typeof globalThis.setTimeout> | undefined;
-
-  const abortFromRequest = () => upstreamController.abort();
-  if (request.signal.aborted) upstreamController.abort();
-  request.signal.addEventListener("abort", abortFromRequest, { once: true });
-
-  const cleanup = () => {
-    streamCancelled = true;
-    if (timeoutId !== undefined) globalThis.clearTimeout(timeoutId);
-    if (charTimerId !== undefined) globalThis.clearTimeout(charTimerId);
-    request.signal.removeEventListener("abort", abortFromRequest);
-  };
-
-  const stream = new ReadableStream<Uint8Array>({
-    start(controller) {
-      const enqueue = (event: AskStreamEvent): boolean => {
-        if (streamCancelled || upstreamController.signal.aborted) return false;
-        controller.enqueue(encoder.encode(ndjson(event)));
-        return true;
-      };
-
-      timeoutId = globalThis.setTimeout(() => upstreamController.abort(), STREAM_TIMEOUT_MS);
-
-      const finishWithTimeout = () => {
-        if (streamCancelled || request.signal.aborted) {
-          cleanup();
-          return;
-        }
-        try {
-          controller.enqueue(encoder.encode(ndjson({ type: "error", code: "timeout", message: messageFor("timeout", locale) })));
-          controller.close();
-        } finally {
-          cleanup();
-        }
-      };
-
-      const emitAnswer = () => {
-        if (streamCancelled || upstreamController.signal.aborted) {
-          if (upstreamController.signal.aborted && !request.signal.aborted && !streamCancelled) finishWithTimeout();
-          return;
-        }
-
-        if (!enqueue({ type: "sources", sources })) {
-          cleanup();
-          return;
-        }
-
-        const characters = Array.from(answer);
-        let cursor = 0;
-        const emitNext = () => {
-          if (streamCancelled || upstreamController.signal.aborted) {
-            if (upstreamController.signal.aborted && !request.signal.aborted && !streamCancelled) finishWithTimeout();
-            return;
-          }
-          if (cursor >= characters.length) {
-            enqueue({ type: "done" });
-            controller.close();
-            cleanup();
-            return;
-          }
-          if (!enqueue({ type: "delta", text: characters[cursor] })) {
-            cleanup();
-            return;
-          }
-          cursor += 1;
-          charTimerId = globalThis.setTimeout(emitNext, MOCK_CHAR_DELAY_MS);
-        };
-        emitNext();
-      };
-
-      upstreamController.signal.addEventListener("abort", finishWithTimeout, { once: true });
-      if (upstreamController.signal.aborted) {
-        finishWithTimeout();
-        return;
-      }
-      emitAnswer();
-    },
-    cancel() {
-      cleanup();
-      upstreamController.abort();
-    },
-  });
-
-  return new Response(stream, {
-    headers: streamHeaders(),
-  });
+function noMatchResponse(locale: AskLocale): Response {
+  const events: AskStreamEvent[] = [
+    { type: "sources", sources: [] },
+    { type: "delta", text: t(noArchiveMatch, locale) },
+    { type: "done" },
+  ];
+  return new Response(events.map(ndjson).join(""), { headers: streamHeaders() });
 }
 
 type KimiUsage = {
@@ -349,6 +263,7 @@ async function kimiStreamResponse(
       const failStream = (code: AskErrorCode) => {
         enqueue({ type: "error", code, message: messageFor(code, locale) });
         close();
+        void reader.cancel().catch(() => {});
       };
 
       const processFrame = (frame: string): boolean => {
@@ -381,7 +296,13 @@ async function kimiStreamResponse(
             receivedContent = true;
             enqueue({ type: "delta", text: content });
           }
-          if (typeof choice?.finish_reason === "string") receivedTerminal = true;
+          if (typeof choice?.finish_reason === "string") {
+            if (choice.finish_reason !== "stop") {
+              failStream("service-unavailable");
+              return true;
+            }
+            receivedTerminal = true;
+          }
           usage = kimiUsage(choice?.usage) ?? kimiUsage(chunk?.usage) ?? usage;
           if (receivedTerminal) {
             if (receivedContent) finish();
@@ -462,17 +383,9 @@ export async function POST(request: Request): Promise<Response> {
   if (Array.from(question).length > MAX_QUESTION_LENGTH) return jsonError("question-too-long", locale);
   if (!consumeRateLimit(clientIp(request), Date.now())) return jsonError("rate-limit", locale);
 
-  const retrieval = retrieveArchive(question, locale);
-
   const apiKey = process.env.MOONSHOT_API_KEY?.trim();
-  if (apiKey && retrieval.sources.length > 0) {
-    return kimiStreamResponse(request, retrieval.prompt, question, retrieval.sources, locale, apiKey);
-  }
-
-  const failure = mockFailure(question);
-  if (failure === "rate-limit") return jsonError("rate-limit", locale);
-  if (failure === "error") return jsonError("service-unavailable", locale);
-
-  const answerText = retrieval.fallbackText ? t(retrieval.fallbackText, locale) : t(noArchiveMatch, locale);
-  return streamResponse(request, retrieval.sources, answerText, locale);
+  if (!apiKey) return jsonError("service-unavailable", locale);
+  const retrieval = retrieveArchive(question, locale);
+  if (retrieval.sources.length === 0) return noMatchResponse(locale);
+  return kimiStreamResponse(request, retrieval.prompt, question, retrieval.sources, locale, apiKey);
 }

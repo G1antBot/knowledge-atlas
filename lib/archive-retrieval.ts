@@ -25,6 +25,8 @@ const SYSTEM_PROMPT_RULES = [
   "只根据下方提供的资料回答问题。",
   "回答必须标注引用了哪一项公开资料。",
   "如果资料中没有相关内容，必须明确说明“档案中未收录”，不得编造。",
+  "复合问题先回答资料明确支持的部分，再清楚列出未收录的部分及其限制。",
+  "个人第一方分工陈述与独立核验必须分开表述；不得从实习经历推断业绩，不得把课程项目写成生产上线，不得把软件在环写成室外实飞或硬件在环，也不得仅凭学历评价学校质量。",
   "当资料类型是个人简介时，使用客观叙述，不要求网站主人使用第一人称；资料明确提供姓名时可以称呼该姓名，严禁把模型自身的身份或经历混入网站主人的资料。",
   "只有下方明确提供联络方式资料时，才可以回答电话或邮箱；否则不得提供、猜测或补全联络方式。",
 ].join("\n");
@@ -36,6 +38,7 @@ const IGNORED_QUERY_FRAGMENTS = new Set([
 
 const RETRIEVAL_INTENTS = [
   { terms: ["高層決策", "高层决策", "high-level decision"], projectSlug: "uav-recognition-strike-control", targets: ["architecture"] },
+  { terms: ["架構", "架构", "architecture"], projectSlug: "knowledge-atlas", targets: ["information-architecture", "content-model"] },
   { terms: ["混合路由", "hybrid routing"], projectSlug: "uav-recognition-strike-control", targets: ["hybrid-routing", "architecture"] },
   { terms: ["看門狗", "看门狗", "watchdog", "急停", "emergency stop"], projectSlug: "uav-recognition-strike-control", targets: ["watchdog", "architecture"] },
   { terms: ["安全防護", "安全防护", "safety boundary", "safety guard"], projectSlug: "uav-recognition-strike-control", targets: ["safety-guards", "safety-ablation"] },
@@ -48,6 +51,29 @@ const RETRIEVAL_INTENTS = [
   { terms: ["組織專案", "组织项目", "organize projects"], projectSlug: "knowledge-atlas", targets: ["content-model", "information-architecture", "retrieval"] },
   { terms: ["下一階段", "下一阶段", "next stage"], projectSlug: "knowledge-atlas", targets: ["delivery-state", "limits"] },
 ].map((intent) => ({ ...intent, terms: intent.terms.map(normalizeText) }));
+
+const PROJECT_ALIASES: Record<string, string[]> = {
+  "uav-recognition-strike-control": ["無人機", "uav", "打擊", "strike", "飛行", "flight", "識別", "drone"],
+  "image-management-system": ["圖片管理", "圖片系統", "image management", "image system", "圖片", "qr login", "掃碼登入", "spring boot", "docker"],
+  "knowledge-atlas": ["knowledge atlas", "知識 atlas", "個人網站", "personal site", "向量資料庫", "vector database", "檢索資料"],
+};
+
+const OWNERSHIP_INTENT_TERMS = [
+  "負責", "负责", "分工", "contribute", "contribution", "personally", "role", "supervisor", "provide", "provided",
+  "responsible", "responsibility", "owner", "ownership", "誰完成", "谁完成", "誰負責", "谁负责", "由誰", "由谁", "提供者", "provider",
+].map(normalizeText);
+
+const RECRUITMENT_INTENT_TERMS = [
+  "built", "build", "deliver", "delivered",
+  "完成", "交付", "成果", "實作", "实现", "功能", "feature", "result", "outcome", "演示", "demo", "environment", "環境", "环境", "模擬", "模拟", "simulation",
+  "實機", "实机", "hardware", "physical", "證據", "证据", "evidence", "依據", "依据", "限制", "limits", "boundary",
+  "上線", "上线", "production", "營運", "运营", "效能", "性能", "performance", "驗收", "验收", "室外", "outdoor", "檢索", "检索", "retrieval", "向量", "vector",
+].map(normalizeText);
+
+const TECHNICAL_INTENT_TERMS = [
+  "架構", "架构", "architecture", "路由", "routing", "看門狗", "看门狗", "watchdog", "急停", "emergency stop",
+  "感知", "perception", "視覺伺服", "视觉伺服", "visual servo", "yoloe", "mavlink", "px4", "rflysim", "限幅", "fence",
+].map(normalizeText);
 
 const PROFILE_INTENT_TERMS = [
   "簡單介紹一下你自己",
@@ -126,6 +152,7 @@ type ProfileCandidate = CandidateBase & {
 type ContactCandidate = CandidateBase & { kind: "contact" };
 type RetrievalCandidate = ArchiveCandidate | ProfileCandidate | ContactCandidate;
 type ScoredCandidate = RetrievalCandidate & { score: number };
+type ScoredArchiveCandidate = ArchiveCandidate & { score: number };
 
 export type ArchiveRetrievalResult = {
   sources: ChatSource[];
@@ -173,7 +200,14 @@ function archiveCandidate(project: ProjectArchive, section: ArchiveSection, subs
   };
 }
 
-const ARCHIVE_CANDIDATES = archiveProjects.flatMap((project) => project.sections.flatMap((section) => [
+function projectSections(project: ProjectArchive): ArchiveSection[] {
+  return [
+    ...(project.overview ? [project.overview] : []),
+    ...project.sections,
+  ];
+}
+
+const ARCHIVE_CANDIDATES = archiveProjects.flatMap((project) => projectSections(project).flatMap((section) => [
   archiveCandidate(project, section),
   ...(section.subsections ?? []).map((subsection) => archiveCandidate(project, section, subsection)),
 ]));
@@ -245,12 +279,63 @@ function queryFragments(normalized: string): string[] {
   return Array.from(fragments);
 }
 
+function textIncludesFragment(text: string, fragment: string): boolean {
+  if (/^[a-z0-9]+$/.test(fragment)) {
+    const escaped = fragment.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`(?:^|[^a-z0-9])${escaped}(?:$|[^a-z0-9])`).test(text);
+  }
+  return text.includes(fragment);
+}
+
 function includesIntent(normalizedQuestion: string, terms: string[]): boolean {
   return terms.some((term) => normalizedQuestion.includes(term));
 }
 
 function hasExplicitContactIntent(normalizedQuestion: string): boolean {
   return includesIntent(normalizedQuestion, EXPLICIT_CONTACT_INTENT_TERMS);
+}
+
+function explicitProjectSlugs(normalizedQuestion: string): string[] {
+  return Object.entries(PROJECT_ALIASES)
+    .filter(([, aliases]) => aliases.some((alias) => normalizedQuestion.includes(normalizeText(alias))))
+    .map(([slug]) => slug);
+}
+
+function hasIntent(normalizedQuestion: string, terms: string[]): boolean {
+  return terms.some((term) => normalizedQuestion.includes(term));
+}
+
+function isOverview(candidate: RetrievalCandidate): candidate is ArchiveCandidate {
+  return candidate.kind === "project" && candidate.section.id === "overview" && !candidate.subsection;
+}
+
+function technicalNodeText(candidate: ScoredArchiveCandidate): string {
+  const node = candidate.subsection ?? candidate.section;
+  return normalizeText([
+    candidate.section.id,
+    candidate.subsection?.id,
+    bilingualText(candidate.section.title),
+    bilingualText(node.title),
+    bilingualText(node.body),
+    ...(node.points ?? []).map(bilingualText),
+  ].join("\n"));
+}
+
+function technicalTitleText(candidate: ScoredArchiveCandidate): string {
+  const node = candidate.subsection ?? candidate.section;
+  return normalizeText(`${candidate.section.id}\n${candidate.subsection?.id}\n${bilingualText(candidate.section.title)}\n${bilingualText(node.title)}`);
+}
+
+function hasTechnicalMaterial(normalizedQuestion: string, candidate: ScoredArchiveCandidate): boolean {
+  const target = candidate.subsection?.id ?? candidate.section.id;
+  const hasTargetedIntent = RETRIEVAL_INTENTS.some((intent) =>
+    intent.projectSlug === candidate.project.slug
+      && intent.targets.includes(target)
+      && intent.terms.some((term) => normalizedQuestion.includes(term)));
+  const hasTechnicalTerm = TECHNICAL_INTENT_TERMS
+    .filter((term) => normalizedQuestion.includes(term))
+    .some((term) => textIncludesFragment(technicalNodeText(candidate), term));
+  return hasTargetedIntent || hasTechnicalTerm;
 }
 
 function intentBoost(normalizedQuestion: string, candidate: RetrievalCandidate): number {
@@ -267,15 +352,24 @@ function intentBoost(normalizedQuestion: string, candidate: RetrievalCandidate):
 }
 
 function scoreCandidate(normalizedQuestion: string, fragments: string[], candidate: RetrievalCandidate): number {
-  let score = normalizedQuestion.length >= 2 && candidate.bodyText.includes(normalizedQuestion) ? 12 : 0;
+  let lexicalScore = normalizedQuestion.length >= 2 && candidate.bodyText.includes(normalizedQuestion) ? 12 : 0;
 
   for (const fragment of fragments) {
-    if (candidate.titleText.includes(fragment)) score += fragment.length >= 3 ? 5 : 2;
-    else if (candidate.tagText.includes(fragment)) score += 4;
-    else if (candidate.bodyText.includes(fragment)) score += fragment.length >= 3 ? 2 : 1;
+    if (textIncludesFragment(candidate.titleText, fragment)) lexicalScore += fragment.length >= 3 ? 5 : 2;
+    else if (textIncludesFragment(candidate.tagText, fragment)) lexicalScore += 4;
+    else if (textIncludesFragment(candidate.bodyText, fragment)) lexicalScore += fragment.length >= 3 ? 2 : 1;
   }
 
-  return score + intentBoost(normalizedQuestion, candidate);
+  if (candidate.kind === "project" && isOverview(candidate)) {
+    // Overview is the authoritative role/result/environment/evidence summary;
+    // technical questions should continue to land on their precise chapters.
+    lexicalScore += lexicalScore > 0 && hasIntent(normalizedQuestion, [...OWNERSHIP_INTENT_TERMS, ...RECRUITMENT_INTENT_TERMS]) ? 22 : 0;
+  }
+
+  // An intent label is only a ranking hint. It must not make an otherwise
+  // unmatched project chapter eligible on its own.
+  if (candidate.kind === "project" && lexicalScore === 0) return 0;
+  return lexicalScore + intentBoost(normalizedQuestion, candidate);
 }
 
 function sourceFor(candidate: ScoredCandidate): ChatSource {
@@ -422,20 +516,93 @@ export function retrieveArchive(question: string, locale: AskLocale = "zh"): Arc
   const normalizedQuestion = normalizeText(question);
   const fragments = queryFragments(normalizedQuestion);
   const contactIntent = hasExplicitContactIntent(normalizedQuestion);
+  const projects = explicitProjectSlugs(normalizedQuestion);
+  const technicalIntent = hasIntent(normalizedQuestion, TECHNICAL_INTENT_TERMS);
+  const ownershipIntent = hasIntent(normalizedQuestion, OWNERSHIP_INTENT_TERMS);
   const candidates: RetrievalCandidate[] = [
     ...ARCHIVE_CANDIDATES,
     PROFILE_CANDIDATE,
     CURRICULUM_CANDIDATE,
     ...(contactIntent ? [CONTACT_CANDIDATE] : []),
   ];
-  const scored = candidates
-    .map((candidate): ScoredCandidate => ({ ...candidate, score: scoreCandidate(normalizedQuestion, fragments, candidate) }))
+  const scoredAll = candidates
+    .map((candidate): ScoredCandidate => ({ ...candidate, score: scoreCandidate(normalizedQuestion, fragments, candidate) }));
+  const scored = scoredAll
     .filter((candidate) => candidate.score > 0)
     .sort((left, right) => right.score - left.score);
   const minimumScore = Math.max(4, (scored[0]?.score ?? 0) * 0.55);
-  const ranked = scored
+  const eligible = scored
     .filter((candidate) => candidate.score >= minimumScore)
-    .slice(0, 2);
+    // A named project is a stronger scope signal than shared technology words
+    // (for example, Docker occurs in more than one archive).
+    .filter((candidate) => projects.length === 0
+      || (candidate.kind === "project" && projects.includes(candidate.project.slug))
+      || (candidate.kind === "contact" && contactIntent));
+
+  const maxSources = projects.length > 1 ? 4 : 2;
+  const selected: ScoredCandidate[] = [];
+  const add = (candidate: ScoredCandidate | undefined) => {
+    if (!candidate || selected.some((item) => item.kind === candidate.kind && sourceFor(item).href === sourceFor(candidate).href)) return;
+    selected.push(candidate);
+  };
+
+  const projectCandidates = (slug: string): ScoredArchiveCandidate[] => scoredAll
+    .filter((candidate) => candidate.score > 0 && candidate.kind === "project" && candidate.project.slug === slug)
+    .map((candidate) => candidate as ScoredArchiveCandidate)
+    .sort((left, right) => right.score - left.score);
+  const bestTechnicalCandidate = (slug: string) => {
+    const matchedTargets = RETRIEVAL_INTENTS
+      .filter((intent) => intent.projectSlug === slug && intent.terms.some((term) => normalizedQuestion.includes(term)))
+      .flatMap((intent) => intent.targets);
+    return projectCandidates(slug)
+      .filter((candidate) => (candidate.section.id !== "overview" || Boolean(candidate.subsection))
+        && hasTechnicalMaterial(normalizedQuestion, candidate))
+      .sort((left, right) => {
+        const leftRank = matchedTargets.indexOf(left.subsection?.id ?? left.section.id);
+        const rightRank = matchedTargets.indexOf(right.subsection?.id ?? right.section.id);
+        const leftHasTarget = leftRank >= 0;
+        const rightHasTarget = rightRank >= 0;
+        if (leftHasTarget !== rightHasTarget) return leftHasTarget ? -1 : 1;
+        if (leftHasTarget && leftRank !== rightRank) return leftRank - rightRank;
+        const leftExactTitle = TECHNICAL_INTENT_TERMS.some((term) => normalizedQuestion.includes(term) && textIncludesFragment(technicalTitleText(left), term));
+        const rightExactTitle = TECHNICAL_INTENT_TERMS.some((term) => normalizedQuestion.includes(term) && textIncludesFragment(technicalTitleText(right), term));
+        if (leftExactTitle !== rightExactTitle) return leftExactTitle ? -1 : 1;
+        return right.score - left.score;
+      })[0];
+  };
+  const bestProjectCandidate = (slug: string) => projectCandidates(slug)[0];
+
+  // Explicitly named projects each get their best matching source before global
+  // fill. This keeps a cross-project comparison from being swallowed by one
+  // project's shared vocabulary (for example, "architecture").
+  if (projects.length > 0 && (!technicalIntent || ownershipIntent)) {
+    for (const slug of projects) {
+      if (ownershipIntent) {
+        add(projectCandidates(slug).find((candidate) => isOverview(candidate)));
+      } else {
+        add(bestProjectCandidate(slug));
+      }
+    }
+  }
+
+  // A mixed ownership + technical question needs both the authoritative role
+  // summary and the precise technical chapter for each named project.
+  if (projects.length > 0 && ownershipIntent && technicalIntent) {
+    for (const slug of projects) add(bestTechnicalCandidate(slug));
+  } else if (projects.length > 0 && technicalIntent) {
+    for (const slug of projects) add(bestTechnicalCandidate(slug));
+  }
+
+  for (const candidate of eligible) {
+    if (selected.length >= maxSources) break;
+    if (technicalIntent && candidate.kind === "project" && !isOverview(candidate)
+      && !hasTechnicalMaterial(normalizedQuestion, candidate)) continue;
+    if (technicalIntent && isOverview(candidate)) continue;
+    // Keep exact technical anchors ahead of a broad overview.
+    add(candidate);
+  }
+
+  const ranked = selected.slice(0, maxSources);
   const sources = ranked.map(sourceFor);
   const material = ranked.length > 0
     ? ranked.map((candidate, index) => `资料 ${index + 1}\n${materialFor(candidate, locale)}`).join("\n\n")
@@ -443,14 +610,21 @@ export function retrieveArchive(question: string, locale: AskLocale = "zh"): Arc
 
   return {
     sources,
-    prompt: buildArchivePrompt(material, locale),
+    prompt: buildArchivePrompt(material, locale, ranked.length),
     fallbackText: ranked[0] ? fallbackFor(ranked[0]) : undefined,
   };
 }
 
-export function buildArchivePrompt(material: string, locale: AskLocale = "zh"): string {
+function inferReferenceCount(material: string): number {
+  const references = Array.from(material.matchAll(/(?:資料|资料)\s+(\d+)/g), (match) => Number(match[1]));
+  return references.length > 0 ? Math.max(...references) : 1;
+}
+
+export function buildArchivePrompt(material: string, locale: AskLocale = "zh", maxReferences?: number): string {
   const responseLanguage = locale === "zh"
     ? "请使用繁体中文回答，保持简洁、平实。"
     : "Answer in English using concise, plain language.";
-  return `${SYSTEM_PROMPT_RULES}\n${responseLanguage}\n引用相关内容时，在句末使用 [资料 1] 或 [资料 2]。\n\n下方提供的资料：\n${material}`;
+  const referenceCount = Math.max(1, maxReferences ?? inferReferenceCount(material));
+  const citationExamples = Array.from({ length: referenceCount }, (_, index) => `[资料 ${index + 1}]`).join(" 或 ");
+  return `${SYSTEM_PROMPT_RULES}\n${responseLanguage}\n引用相关内容时，在句末使用 ${citationExamples}。先回答问题中资料支持的部分，再明确指出档案未收录的部分及其边界。区分个人第一方分工陈述与独立核验；不得从实习经历推断业绩，不得把课程项目写成生产上线，不得把软件在环写成室外实飞或硬件在环，也不得仅凭学历评价学校质量。\n\n下方提供的资料：\n${material}`;
 }

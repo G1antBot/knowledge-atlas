@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <strong>一个以真实项目档案为核心的个人 AI 知识系统前端原型。</strong><br>
+  <strong>一个以项目档案、个人贡献和来源引用为核心的个人 AI 知识系统。</strong><br>
   <sub>A source-aware personal knowledge system built around projects, papers, experiments and evidence.</sub>
 </p>
 
@@ -18,7 +18,7 @@
 
 ## 功能证据
 
-首页先展示档案，而不是人物照片、求职口号或能力评分。访客可以从项目进入章节，再沿来源、搜索与问答继续探索。
+首页保留简短背景和代表项目入口。访客可以从项目概览进入章节，再沿来源、搜索与问答继续探索。
 
 <p align="center">
   <img src="./assets/readme/archive-index.png" width="100%" alt="Knowledge Atlas 首页的瑞士编辑风项目档案索引">
@@ -47,7 +47,7 @@
 
 Knowledge Atlas 把个人网站改造成一个可以持续整理和使用的知识入口：
 
-- **档案优先**：项目是首页的第一层内容，个人背景退居系统说明之中。
+- **档案优先**：首页以项目为主要入口，同时提供姓名、简短背景和完整个人资料的链接。
 - **章节化记录**：每个项目由摘要、方法、架构、证据、限制和媒体组成。
 - **来源可追溯**：章节标明论文或实验说明来源，并生成来源到章节的回链。
 - **本地全文检索**：Orama 在浏览器内索引公开档案，cmdk 提供键盘友好的搜索界面。
@@ -126,7 +126,7 @@ Copy-Item .env.example .env.local
 npm.cmd run dev
 ```
 
-如需启用真实问答，只在 `.env.local` 或部署平台的加密环境变量中填写 `MOONSHOT_API_KEY`。`KIMI_MODEL` 默认使用 `kimi-k2.6`，服务端关闭思考模式以控制档案问答的延迟与输出长度；没有 Key 时自动回退到命中章节的本地摘录，不要给密钥添加 `NEXT_PUBLIC_` 前缀。
+在 `.env.local` 或部署平台的加密环境变量中填写 `MOONSHOT_API_KEY` 后启用问答。`KIMI_MODEL` 默认使用 `kimi-k2.6`，服务端关闭思考模式。缺少凭证或上游异常时返回明确的服务错误，不用本地摘录替代模型回答；静态档案和浏览器内搜索仍可使用。不要给密钥添加 `NEXT_PUBLIC_` 前缀。
 
 打开 [http://127.0.0.1:3000/](http://127.0.0.1:3000/)。
 
@@ -139,6 +139,18 @@ npm.cmd start
 ```
 
 ## 页面入口
+
+项目详情页在原有章节目录前提供概览，说明目标、个人贡献、完成情况与验证环境。概览与正文使用相同的数据结构，并同时进入全文搜索和问答检索。团队项目的个人分工根据本人说明整理，不代表独立验收或生产运行证明。
+
+检索和接口检查：
+
+```powershell
+npm.cmd test
+npm.cmd run check
+npm.cmd run build
+```
+
+固定检索问题覆盖个人职责、成果、实验环境、来源、复合问题、跨项目比较、缺失资料及简繁／英文表达。接口测试使用模拟上游，不调用真实模型；通过这些测试不等于已验证全部模型回答。联网补充、多轮上下文和反馈持久化尚未实现。
 
 | 路径 | 内容 |
 | --- | --- |
@@ -168,12 +180,12 @@ assets/readme/       GitHub README 的 SVG 与真实页面截图
 
 | 已实现 | 尚未实现 |
 | --- | --- |
-| 可本地打开的 Next.js 前端与 Edge Route | 向量知识库与更多公开资料 |
+| 可本地运行的 Next.js 网站与 Edge Route | 向量知识库与更多公开资料 |
 | 浏览器内搜索与服务器端章节检索 | 分布式限流与运营观测 |
-| Kimi 流式回答、引用入口与无 Key 回退 | 多轮会话持久化 |
+| Kimi 流式回答、引用入口与明确错误状态 | 多轮会话持久化 |
 | UAV、图片管理系统与 Knowledge Atlas 档案 | 两份既有档案的代表图重新筛选 |
 
-- 启用模型时，提问会发送至 Kimi API；界面会提醒访客不要输入个人或机密信息，回答以引用章节为准。没有 Key 时只返回命中章节的本地摘录。
+- 启用模型时，提问会发送至 Kimi API；界面会提醒访客不要输入个人或机密信息，回答以引用章节为准。缺少 Key 时问答返回服务错误；静态档案仍可阅读。
 - API Key 不得写入客户端代码或提交到 Git，只能放在服务器环境变量中。
 - 首页不展示实验指标或个人能力评分，论文图表只在对应档案中出现。
 - 培养方案只用于说明本科课程范围，不代表成绩、排名或熟练度自评。
@@ -186,12 +198,12 @@ assets/readme/       GitHub README 的 SVG 与真实页面截图
 2. 新媒体必须归属于具体档案，不建立跨项目展示墙。
 3. 新增章节时同时填写稳定 `id`、双语标题与来源引用。
 4. 提交前运行 TypeScript 检查、生产构建和敏感信息扫描。
-5. 未配置模型凭证时保留本地回退，确保前端与公开档案仍可独立运行。
+5. 将模型服务错误与资料缺失分开处理；未配置凭证时，静态档案与浏览器内搜索仍可独立使用。
 
 ---
 
 <p align="center">
-  <sub>Knowledge Atlas · source-aware frontend prototype · maintained as an evolving personal archive</sub>
+  <sub>Knowledge Atlas · source-aware project archive and Q&A</sub>
 </p>
 
 ## Current interaction model
@@ -200,4 +212,4 @@ assets/readme/       GitHub README 的 SVG 与真实页面截图
 - Project directories collapse to the active chapter on desktop. On small screens, the directory becomes an accessible bottom drawer with Escape handling, focus containment and scroll locking.
 - The UAV archive follows the eleven-part thesis presentation order. Its four software-in-the-loop clips belong to the autonomous execution and visual-servo chapter; “strike” remains a simulated target-control / terminal-traverse task.
 - Search indexes projects, chapters, nested subsections, figure captions and chapter media, then links to stable public anchors. Exact experiment metrics, raw logs, API keys and local source paths remain outside the public page.
-- `/ask` retrieves 1–2 public archive sections on the server, streams a Kimi answer with stable citations, and retains a no-key local fallback.
+- `/ask` retrieves public project overviews and sections on the server. Single-project questions use up to two sources; cross-project questions can use up to four. Kimi streams the answer with stable citations. Missing credentials and upstream failures return explicit errors. Incomplete or canceled answers are visibly marked and do not receive completed-answer controls.

@@ -267,13 +267,26 @@ main { background: var(--paper); color: var(--ink); padding-bottom: 110px; }
 
 .swiss-hero { min-height: auto; padding: 42px 0 54px; border-bottom: 1px solid var(--ink); }
 .swiss-hero-meta, .project-hero-meta { display: flex; justify-content: space-between; gap: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--ink); }
-.swiss-hero-grid { display: grid; grid-template-columns: 96px minmax(0, 1fr) 250px; gap: 26px; align-items: end; padding-top: 54px; }
+.swiss-hero-grid { display: grid; grid-template-columns: 64px minmax(0, 1fr) minmax(270px, .55fr); gap: 26px; align-items: center; padding-top: 34px; }
 .swiss-hero-number { align-self: start; color: var(--blue); font: 700 64px/.8 "Helvetica Neue", sans-serif; letter-spacing: -.08em; }
-.swiss-hero h1 { margin: 0; font: 800 clamp(4.5rem, 8.2vw, 7.6rem)/.77 "Helvetica Neue", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; letter-spacing: -.09em; }
+.swiss-hero h1 { margin: 0; font: 800 clamp(3.2rem, 6.3vw, 6rem)/.85 "Helvetica Neue", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; letter-spacing: -.075em; }
 .swiss-hero h1 span { color: var(--blue); }
 .swiss-hero-cn { margin: 24px 0 0; color: var(--red); font-size: clamp(1rem, 2vw, 1.35rem); letter-spacing: .08em; }
 .swiss-hero-note { align-self: center; padding: 18px 0 18px 20px; border-left: 4px solid var(--red); }
 .swiss-hero-note p { margin: 0 0 22px; color: var(--ink); }
+.home-profile-name { display: block; margin-bottom: 12px; font-size: 25px; font-weight: 600; }
+.home-quick-links { display: flex; flex-wrap: wrap; gap: 12px 22px; margin-top: 18px; font-size: 14px; }
+.home-quick-links a { padding: 8px 0; border-bottom: 1px solid var(--blue); }
+.project-overview { display: grid; grid-template-columns: minmax(180px, .65fr) minmax(0, 1.5fr); gap: 40px; padding: 36px 0; border-top: 1px solid var(--ink); }
+.project-overview-heading h2 { margin: 18px 0 0; font-size: clamp(1.6rem, 3vw, 2.3rem); line-height: 1.25; letter-spacing: -.035em; }
+.project-overview-body > p { margin: 0 0 18px; font-size: 16px; }
+.project-overview-body > ul { display: grid; gap: 13px; margin: 0; padding-left: 20px; }
+.project-overview-body > ul > li::marker { color: var(--blue); }
+.overview-sources { margin-top: 24px; border-top: 1px solid var(--line); }
+.overview-sources summary, .curriculum-disclosure summary { cursor: pointer; padding: 16px 0; color: var(--blue); }
+.overview-sources summary:focus-visible, .curriculum-disclosure summary:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.curriculum-disclosure { margin-top: 20px; border-top: 1px solid var(--line); }
+.curriculum-disclosure .curriculum-grid { margin-top: 12px; }
 .swiss-hero-meta, .swiss-hero-number, .swiss-hero h1, .swiss-hero-note { animation: swiss-rise .65s both cubic-bezier(.2,.75,.25,1); }
 .swiss-hero-number { animation-delay: .08s; }
 .swiss-hero h1 { animation-delay: .14s; }
@@ -388,6 +401,7 @@ main { background: var(--paper); color: var(--ink); padding-bottom: 110px; }
 }
 
 @media (max-width: 850px) {
+  .project-overview { grid-template-columns: minmax(0, 1fr); gap: 22px; padding: 28px 0; }
   .site-header { background: var(--paper); }
   .main-nav { background: var(--paper); color: var(--ink); }
   .swiss-hero { min-height: auto; padding: 34px 0 54px; }

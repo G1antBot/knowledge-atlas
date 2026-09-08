@@ -109,6 +109,7 @@ export type ProjectArchive = {
   accent: "blue" | "red" | "ink";
   summary: Bilingual;
   tags: string[];
+  overview?: ArchiveSection;
   sections: ArchiveSection[];
   sources: SourceRef[];
 };
@@ -126,7 +127,11 @@ const thesisChapter5: SourceRef = { label: { zh: "論文第 5 章 · 總結與�
 const silReadme: SourceRef = { label: { zh: "SIL README · 系統概述與執行機制", en: "SIL README · System overview and runtime mechanisms" }, kind: "readme" };
 const silReadmeLlm: SourceRef = { label: { zh: "SIL README.LLM · 評測與安全說明", en: "SIL README.LLM · Evaluation and safety notes" }, kind: "readme" };
 const imageSystemDeck: SourceRef = { label: { zh: "圖片管理系統答辯簡報 · 系統設計與實作", en: "Image management system presentation · Design and implementation" }, kind: "archive" };
-const imageSystemResume: SourceRef = { label: { zh: "個人履歷 · 團隊角色與主要工作", en: "Personal resume · Team role and primary contributions" }, kind: "archive" };
+const imageSystemResume: SourceRef = {
+  label: { zh: "個人履歷 · 本人角色陳述", en: "Personal resume · Candidate-authored role statement" },
+  kind: "archive",
+  note: { zh: "候選人自述，未由專案程式碼或獨立驗收材料逐項核對", en: "Candidate-authored statement, not independently verified item by item against project code or acceptance records" },
+};
 const knowledgeAtlasRepository: SourceRef = {
   label: { zh: "Knowledge Atlas · 公開原始碼倉庫", en: "Knowledge Atlas · Public source repository" },
   kind: "repository",
@@ -137,8 +142,53 @@ const knowledgeAtlasReadme: SourceRef = {
   label: { zh: "Knowledge Atlas README · 功能與邊界", en: "Knowledge Atlas README · Features and boundaries" },
   kind: "readme",
   note: { zh: "公開功能、技術結構與維護原則", en: "Public features, technical structure, and maintenance rules" },
-  href: "https://github.com/G1antBot/knowledge-atlas#readme",
+  href: "https://github.com/G1antBot/knowledge-atlas#current-interaction-model",
 };
+const knowledgeAtlasContentModel: SourceRef = {
+  label: { zh: "公開檔案 · data/content.ts", en: "Public archive · data/content.ts" },
+  kind: "repository",
+  note: { zh: "雙語專案、章節、來源、圖表與媒體的結構化資料", en: "Structured bilingual data for projects, sections, sources, figures, and media" },
+  href: "https://github.com/G1antBot/knowledge-atlas/blob/main/data/content.ts",
+};
+const knowledgeAtlasSearchSource: SourceRef = {
+  label: { zh: "公開檔案 · lib/archive-search.ts", en: "Public archive · lib/archive-search.ts" },
+  kind: "repository",
+  note: { zh: "瀏覽器端全文檢索與穩定錨點結果", en: "Browser-side full-text retrieval and stable-anchor results" },
+  href: "https://github.com/G1antBot/knowledge-atlas/blob/main/lib/archive-search.ts",
+};
+const knowledgeAtlasRetrievalSource: SourceRef = {
+  label: { zh: "公開檔案 · lib/archive-retrieval.ts", en: "Public archive · lib/archive-retrieval.ts" },
+  kind: "repository",
+  note: { zh: "伺服器端關鍵詞檢索與公開節點範圍", en: "Server-side keyword retrieval and public-node scope" },
+  href: "https://github.com/G1antBot/knowledge-atlas/blob/main/lib/archive-retrieval.ts",
+};
+const knowledgeAtlasAskSource: SourceRef = {
+  label: { zh: "公開檔案 · app/api/ask/route.ts", en: "Public archive · app/api/ask/route.ts" },
+  kind: "repository",
+  note: { zh: "Kimi K2.6（模型 kimi-k2.6）串流、來源引用與明確錯誤回應", en: "Kimi K2.6 (model kimi-k2.6) streaming, source citations, and explicit error responses" },
+  href: "https://github.com/G1antBot/knowledge-atlas/blob/main/app/api/ask/route.ts",
+};
+const knowledgeAtlasReadmeBoundaries: SourceRef = {
+  label: { zh: "Knowledge Atlas README · 當前邊界", en: "Knowledge Atlas README · Current boundaries" },
+  kind: "readme",
+  note: { zh: "目前已實作與尚未實作的功能邊界", en: "Current implementation and non-implementation boundaries" },
+  href: "https://github.com/G1antBot/knowledge-atlas#当前边界",
+};
+const uavOverviewLinks: SourceRef[] = [
+  { label: { zh: "檔案章節 · 研究與設計路線", en: "Archive section · Research and design route" }, kind: "archive", href: "/projects/uav-recognition-strike-control#research-route" },
+  { label: { zh: "檔案章節 · 自主執行閉環與視覺伺服", en: "Archive section · Autonomous loop and visual servoing" }, kind: "archive", href: "/projects/uav-recognition-strike-control#autonomous-loop" },
+  { label: { zh: "檔案章節 · 局限與反思", en: "Archive section · Limitations and reflection" }, kind: "archive", href: "/projects/uav-recognition-strike-control#limitations" },
+];
+const imageOverviewLinks: SourceRef[] = [
+  { label: { zh: "檔案章節 · 掃碼登入與持久化鑑權", en: "Archive section · QR login and persistent authentication" }, kind: "archive", href: "/projects/image-management-system#authentication" },
+  { label: { zh: "檔案章節 · 物件儲存與內容審核", en: "Archive section · Object storage and content review" }, kind: "archive", href: "/projects/image-management-system#storage-review" },
+  { label: { zh: "檔案章節 · 檔案邊界", en: "Archive section · Archive boundaries" }, kind: "archive", href: "/projects/image-management-system#limits" },
+];
+const knowledgeAtlasOverviewLinks: SourceRef[] = [
+  { label: { zh: "檔案章節 · 檔案與章節結構", en: "Archive section · Archive and section structure" }, kind: "archive", href: "/projects/knowledge-atlas#information-architecture" },
+  { label: { zh: "檔案章節 · 本地檢索與錨點導航", en: "Archive section · Local retrieval and anchor navigation" }, kind: "archive", href: "/projects/knowledge-atlas#retrieval" },
+  { label: { zh: "檔案章節 · 目前邊界", en: "Archive section · Current boundaries" }, kind: "archive", href: "/projects/knowledge-atlas#limits" },
+];
 const curriculumPlan: SourceRef = {
   label: { zh: "計算機科學與技術專業培養方案 · 課程清單", en: "Computer Science and Technology curriculum · Course list" },
   kind: "archive",
@@ -360,6 +410,21 @@ const uavArchiveBase = legacyUavArchive;
 
 export const uavArchive: ProjectArchive = {
   ...uavArchiveBase,
+  overview: {
+    id: "overview",
+    title: { zh: "專案概覽", en: "Project overview" },
+    body: {
+      zh: "這是李文迪獨立完成的本科畢業設計，將自然語言任務放進可檢查的無人機感知與控制鏈路。系統整合既有的預訓練模型、飛控軟體與模擬平台；頁面中的 strike 僅指軟體在環模擬裡的目標控制／終端穿越任務。",
+      en: "Li Wendi independently completed this undergraduate graduation project, placing natural-language missions inside an inspectable UAV perception and control loop. It integrates existing pretrained models, flight-control software, and simulation platforms; here, strike refers only to a simulated target-control / terminal-traverse task in software-in-the-loop.",
+    },
+    points: [
+      { zh: "個人交付（獨立完成）：研究與系統設計、程式實作、YOLOE 訓練與評測、模擬驗證及室內動捕樣機整合。", en: "Independent personal delivery: research and system design, software implementation, YOLOE training and evaluation, simulation validation, and indoor motion-capture prototype integration." },
+      { zh: "執行環境：RflySim／PX4／UE4 軟體在環，另有有限的室內實體樣機鏈路聯調。", en: "Execution environments: RflySim / PX4 / UE4 software-in-the-loop, plus limited indoor physical-prototype link integration." },
+      { zh: "如有使用 AI，範圍僅限文獻與材料搜尋；實際無人機硬體由導師提供。", en: "If AI assistance was used, it was limited to literature and material searches; the supervisor provided the physical UAV hardware." },
+      { zh: "證據邊界：目前尚無戶外實飛、完整實體 strike 驗證或多機協同驗證的可靠證據；精確實驗數值保留在論文脈絡。", en: "Evidence boundary: the public record does not provide reliable evidence of outdoor flight, full physical strike validation, or multi-agent validation; exact experiment values remain in the thesis context." },
+    ],
+    sources: [{ kind: "archive", label: { zh: "本人說明 · 個人完成範圍與硬體來源", en: "First-party statement · Contributions and hardware source" }, note: { zh: "分工依李文迪本人確認整理；技術內容另參照下列論文與系統說明。", en: "Contributions are based on Li Wendi's own confirmation; the technical material is referenced separately below." } }, thesisChapter3, thesisChapter4, thesisChapter5, silReadme, silReadmeLlm, ...uavOverviewLinks],
+  },
   sections: [
     {
       ...legacyUavSections[0],
@@ -481,13 +546,27 @@ export const archiveProjects: ProjectArchive[] = [
     slug: "image-management-system",
     index: "02",
     title: { zh: "圖片管理系統", en: "Image Management System" },
-    subtitle: { zh: "四人團隊完成的跨端圖片管理系統，本頁只記錄個人負責的後端與工程化工作。", en: "A cross-platform image system built by a four-person team. This page documents only the assigned backend and delivery responsibilities." },
+    subtitle: { zh: "四人團隊完成的跨端圖片管理系統，本頁只記錄個人履歷自述的後端與工程化工作。", en: "A cross-platform image system built by a four-person team. This page documents only the backend and delivery responsibilities described in the personal resume." },
     category: { zh: "團隊專案 · Web／移動端／服務端", en: "Team project · Web / mobile / server" },
     period: "2024.11—2025.02",
     status: "secondary",
     accent: "red",
-    summary: { zh: "這個課程專案由四人協作完成，涵蓋 PC 端、Android 移動端、Spring Boot 服務端、MySQL 與阿里雲 OSS。個人負責範圍集中在掃碼與持久化登入、物件儲存與敏感資訊過濾、GitLab 協作流程，以及 Docker 容器化部署。", en: "This four-person course project spans a PC client, Android client, Spring Boot services, MySQL, and Alibaba Cloud OSS. The documented responsibilities cover QR and persistent login, object storage and sensitive-content filtering, GitLab collaboration, and Docker deployment." },
+    summary: { zh: "這個課程專案由四人協作完成，涵蓋 PC 端、Android 移動端、Spring Boot 服務端、MySQL 與阿里雲 OSS。個人履歷自述的負責範圍集中在掃碼與持久化登入、物件儲存與敏感資訊過濾、GitLab 協作流程，以及 Docker 容器化部署。", en: "This four-person course project spans a PC client, Android client, Spring Boot services, MySQL, and Alibaba Cloud OSS. The candidate-authored role statement covers QR and persistent login, object storage and sensitive-content filtering, GitLab collaboration, and Docker deployment." },
     tags: ["4-person team", "Spring Boot", "Vue 3", "MySQL", "Alibaba Cloud OSS", "Docker"],
+    overview: {
+      id: "overview",
+      title: { zh: "專案概覽", en: "Project overview" },
+      body: {
+        zh: "這是四人共同完成的跨端圖片管理系統，包含 PC 端、Android 端、Spring Boot 服務端、MySQL 與阿里雲 OSS。李文迪在團隊中擔任後端開發；掃碼登入、持久化鑑權、OSS 檔案處理、敏感資訊過濾、GitLab／Git Flow 協作與 Dockerfile 容器化，均屬個人履歷中的角色自述。答辯簡報支持系統介面與結構的說明，但沒有獨立驗收或正式生產證據。",
+        en: "This four-person team project is a cross-platform image-management system with PC and Android clients, Spring Boot services, MySQL, and Alibaba Cloud OSS. Li Wendi's role was backend development. QR login, persistent authentication, OSS file handling, sensitive-content filtering, GitLab / Git Flow collaboration, and Dockerfile-based containerization are described in the personal resume as a candidate-authored role statement. The presentation supports the interface and system structure, but there is no independent acceptance or production evidence.",
+      },
+      points: [
+        { zh: "交付功能：跨端登入、圖片與相簿管理、檔案上傳，以及服務端的身分與儲存流程。", en: "Delivered scope: cross-platform login, image and album management, file upload, and server-side identity and storage flows." },
+        { zh: "個人角色陳述：後端掃碼／持久化登入、OSS 與敏感資訊過濾，並參與協作與容器化部署。", en: "Candidate-authored role statement: backend QR / persistent login, OSS and sensitive-content filtering, plus collaboration and containerized delivery." },
+        { zh: "限制：目前沒有可公開的正式上線流量、可用性、效能或獨立驗收資料。", en: "Limit: there is no public production traffic, availability, performance, or independent acceptance evidence." },
+      ],
+      sources: [imageSystemDeck, imageSystemResume, ...imageOverviewLinks],
+    },
     sections: [
       {
         id: "plain-summary",
@@ -495,7 +574,7 @@ export const archiveProjects: ProjectArchive[] = [
         body: { zh: "系統把登入、圖片、相簿與檔案儲存整理成一條跨端流程。使用者可以從 PC 或 Android 端登入，管理圖片與相簿；服務端負責身分驗證、資料操作與檔案存取，圖片本體存入阿里雲 OSS，資料庫保留使用者、圖片、相簿與檔案位置之間的關係。", en: "The system connects authentication, images, albums, and file storage across PC and Android clients. The server handles identity, data operations, and file access; image objects live in Alibaba Cloud OSS while the database keeps user, image, album, and file-location relationships." },
         points: [
           { zh: "專案由四人共同完成；本頁不把團隊交付全部歸為個人成果。", en: "The project was completed by four people; this page does not present the entire team delivery as individual work." },
-          { zh: "角色：後端開發，另負責部分協作與部署工作。", en: "Role: backend development, with additional collaboration and deployment responsibilities." },
+          { zh: "個人履歷自述的角色：後端開發，另負責部分協作與部署工作。", en: "Candidate-authored role statement: backend development, with additional collaboration and deployment responsibilities." },
         ],
         figures: [
           {
@@ -521,7 +600,7 @@ export const archiveProjects: ProjectArchive[] = [
           {
             path: "/research/image-management/system-architecture.svg",
             alt: { zh: "圖片管理系統跨端架構圖", en: "Cross-platform architecture diagram for the image management system" },
-            caption: { zh: "依據答辯簡報重新繪製；圖中只保留已核驗的端、服務與儲存關係。", en: "Redrawn from the presentation, retaining only verified client, service, and storage relationships." },
+            caption: { zh: "依據答辯簡報重新繪製；圖中只保留簡報支持的端、服務與儲存關係。", en: "Redrawn from the presentation, retaining only client, service, and storage relationships supported by the deck." },
             format: "wide",
           },
         ],
@@ -530,7 +609,7 @@ export const archiveProjects: ProjectArchive[] = [
       {
         id: "authentication",
         title: { zh: "掃碼登入與持久化鑑權", en: "QR login and persistent authentication" },
-        body: { zh: "後端工作包括實作掃碼登入與狀態輪詢。Web 端取得隨機字串並產生二維碼；移動端掃描後提交字串與使用者資訊；服務端完成配對與身分檢查，再把登入結果交回 Web 端。登入狀態同時支援 7 天持久化鑑權。", en: "The backend work included QR login and status polling. The web client requests a random string and presents it as a QR code; the mobile client submits the scanned string with user information; the server matches and validates the request before returning the login result to the web client. Authentication also supports a seven-day persistent session." },
+        body: { zh: "依個人履歷自述，後端工作包括掃碼登入與狀態輪詢。Web 端取得隨機字串並產生二維碼；移動端掃描後提交字串與使用者資訊；服務端完成配對與身分檢查，再把登入結果交回 Web 端。登入狀態同時支援 7 天持久化鑑權。這些個人分工沒有獨立驗收或正式生產證據。", en: "The personal resume describes backend work including QR login and status polling. The web client requests a random string and presents it as a QR code; the mobile client submits the scanned string with user information; the server matches and validates the request before returning the login result to the web client. Authentication also supports a seven-day persistent session. These individual responsibilities do not have independent acceptance or production evidence." },
         figures: [
           {
             path: "/research/image-management/qr-login-flow.svg",
@@ -544,7 +623,7 @@ export const archiveProjects: ProjectArchive[] = [
       {
         id: "storage-review",
         title: { zh: "物件儲存與內容審核", en: "Object storage and content review" },
-        body: { zh: "後端接入阿里雲 OSS，處理大檔案分片上傳與靜態資源存取。資料庫不直接保存圖片內容，而是保存對應位置與業務資料；服務端另外加入圖片與文字的敏感資訊過濾與審核流程。", en: "The backend integrates Alibaba Cloud OSS for multipart uploads and static-resource access. The database stores locations and business records rather than image bodies, while the server adds sensitive-content filtering and review for images and text." },
+        body: { zh: "依個人履歷自述，後端工作包含接入阿里雲 OSS、處理大檔案分片上傳與靜態資源存取。資料庫不直接保存圖片內容，而是保存對應位置與業務資料；服務端另外加入圖片與文字的敏感資訊過濾與審核流程。這些分工屬個人自述，沒有獨立驗收或正式生產證據。", en: "The personal resume describes backend work integrating Alibaba Cloud OSS for multipart uploads and static-resource access. The database stores locations and business records rather than image bodies, while the server adds sensitive-content filtering and review for images and text. These responsibilities are candidate-authored and have no independent acceptance or production evidence." },
         figures: [
           {
             path: "/research/image-management/batch-upload.webp",
@@ -558,7 +637,7 @@ export const archiveProjects: ProjectArchive[] = [
       {
         id: "collaboration-deployment",
         title: { zh: "協作與部署", en: "Collaboration and deployment" },
-        body: { zh: "四人團隊使用 GitLab 管理程式碼，依照 Git Flow 組織分支與並行迭代。部署部分包含編寫 Dockerfile，把應用與執行環境封裝為映像，使用 Docker 降低不同環境之間的設定差異。", en: "The four-person team used GitLab and a Git Flow branch model for parallel iteration. The deployment work included writing the Dockerfile and packaging the application with its runtime into an image to reduce configuration differences across environments." },
+        body: { zh: "四人團隊使用 GitLab 管理程式碼，依照 Git Flow 組織分支與並行迭代。依個人履歷自述，部署部分包含編寫 Dockerfile，把應用與執行環境封裝為映像；這項個人分工沒有獨立驗收或正式生產證據。", en: "The four-person team used GitLab and a Git Flow branch model for parallel iteration. The personal resume describes deployment work that included writing the Dockerfile and packaging the application with its runtime into an image; this individual responsibility has no independent acceptance or production evidence." },
         sources: [imageSystemResume],
       },
       {
@@ -579,18 +658,32 @@ export const archiveProjects: ProjectArchive[] = [
     period: "2026—Present",
     status: "secondary",
     accent: "ink",
-    summary: { zh: "Knowledge Atlas 是持續整理資料的介面。首頁先呈現專案檔案，詳情頁再把正文、圖表、來源與相關章節放回同一條閱讀路徑；本地搜尋建立內容入口，伺服器端問答則先檢索公開章節，再由 Kimi 整理附有來源的回答。", en: "Knowledge Atlas serves as an interface for continuously organizing material. Project archives come first, while detail pages keep writing, figures, sources, and related sections in one reading path. Local search creates entry points, while server-side Q&A retrieves public sections before Kimi organizes a cited answer." },
+    summary: { zh: "Knowledge Atlas 是持續整理資料的介面。首頁先呈現專案檔案，詳情頁再把正文、圖表、來源與相關章節放回同一條閱讀路徑；本地搜尋建立內容入口，伺服器端 Ask 先檢索公開章節，再由 Kimi 2.6 整理附有來源的回答。", en: "Knowledge Atlas serves as an interface for continuously organizing material. Project archives come first, while detail pages keep writing, figures, sources, and related sections in one reading path. Local search creates entry points, while server-side Ask retrieves public sections before Kimi 2.6 organizes a cited answer." },
     tags: ["Next.js 16", "React 19", "TypeScript", "Orama", "cmdk", "Motion", "Kimi API"],
+    overview: {
+      id: "overview",
+      title: { zh: "專案概覽", en: "Project overview" },
+      body: {
+        zh: "Knowledge Atlas 是李文迪持續維護的個人知識系統，把專案、論文、實驗與個人背景整理成雙語檔案。",
+        en: "Knowledge Atlas is Li Wendi's maintained personal knowledge system for organizing projects, papers, experiments, and personal context as bilingual archives.",
+      },
+      points: [
+        { zh: "個人交付：雙語內容模型、檔案與章節資訊架構、響應式介面、Orama／cmdk 本地搜尋，以及 Ask 路由。", en: "Personal delivery: bilingual content model, archive and section information architecture, responsive interface, Orama / cmdk local search, and the Ask route." },
+        { zh: "目前功能：穩定章節錨點、來源回鏈、瀏覽器端全文檢索、伺服器端關鍵詞檢索，以及 Kimi 2.6 串流；伺服器端停用 thinking。單一專案最多返回 2 個節點，跨專案最多返回 4 個。", en: "Current functions: stable section anchors, source backlinks, browser-side full-text search, server-side keyword retrieval, and Kimi 2.6 streaming with server-side thinking disabled. A single-project request returns up to 2 nodes; a cross-project request returns up to 4." },
+        { zh: "服務邊界：缺少模型憑證或上游請求失敗時返回明確錯誤，不提供本地摘錄回退；不使用外部網路搜尋、向量資料庫、回饋儲存或多輪理解。", en: "Service boundaries: missing model credentials or an upstream failure returns an explicit error, with no local-excerpt fallback. The site does not use external web search, a vector database, feedback storage, or multi-turn understanding." },
+      ],
+      sources: [knowledgeAtlasRepository, knowledgeAtlasContentModel, knowledgeAtlasSearchSource, knowledgeAtlasRetrievalSource, knowledgeAtlasAskSource, knowledgeAtlasReadme, knowledgeAtlasReadmeBoundaries, ...knowledgeAtlasOverviewLinks],
+    },
     sections: [
       {
         id: "purpose",
         title: { zh: "持續使用的個人網站", en: "A personal site designed for continued use" },
-        body: { zh: "這個網站不以履歷摘要或能力評分作為首頁，而是讓專案檔案成為主要入口。訪客可以先讀一份專案，再沿著章節、來源與相關主題繼續查找；個人背景留在獨立頁面，與專案證據分開。", en: "The homepage does not begin with a resume summary or capability scores. Project archives are the main entry points. A visitor can start with one project, then continue through sections, sources, and related topics, while personal context remains on a separate page." },
+        body: { zh: "這個網站以專案檔案作為主要入口，同時在首頁保留姓名與簡短背景。訪客可以先讀一份專案，再沿著章節、來源與相關主題繼續查找；完整個人背景則位於獨立的 About 頁面。", en: "This site uses project archives as its main entry points while keeping a name and brief profile on the homepage. A visitor can start with one project, then continue through sections, sources, and related topics; the full profile remains on the About page." },
         points: [
-          { zh: "首頁只保留辨識檔案所需的名稱、摘要、狀態與主題。", en: "The homepage keeps only the names, summaries, states, and topics needed to identify each archive." },
+          { zh: "首頁同時提供專案索引與簡短個人背景；完整履歷資訊保留在 About 頁面。", en: "The homepage combines the project index with a brief profile; full profile details remain on the About page." },
           { zh: "圖表、截圖和媒體回到它們所屬的專案章節。", en: "Figures, screenshots, and media stay inside the project sections they support." },
         ],
-        sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+        sources: [knowledgeAtlasContentModel, knowledgeAtlasReadme],
       },
       {
         id: "information-architecture",
@@ -602,7 +695,7 @@ export const archiveProjects: ProjectArchive[] = [
           caption: { zh: "章節目錄、閱讀進度與正文共用同一套穩定錨點。", en: "The directory, reading progress, and article body share the same stable anchors." },
           format: "wide",
         }],
-        sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+        sources: [knowledgeAtlasContentModel, knowledgeAtlasReadme],
       },
       {
         id: "content-model",
@@ -613,7 +706,7 @@ export const archiveProjects: ProjectArchive[] = [
           { zh: "公開派生資源與原始材料分開保存。", en: "Public derivative assets remain separate from source material." },
           { zh: "限制與尚未核驗的部分同樣保留在檔案中。", en: "Limits and unverified areas remain visible inside each archive." },
         ],
-        sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+        sources: [knowledgeAtlasContentModel],
       },
       {
         id: "retrieval",
@@ -625,7 +718,7 @@ export const archiveProjects: ProjectArchive[] = [
           caption: { zh: "搜尋結果保留檔案名稱、章節與來源，並直接跳轉到對應錨點。", en: "Results retain the archive, section, and source context and link directly to the matching anchor." },
           format: "wide",
         }],
-        sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+        sources: [knowledgeAtlasSearchSource, knowledgeAtlasReadme],
       },
       {
         id: "visual-system",
@@ -642,25 +735,31 @@ export const archiveProjects: ProjectArchive[] = [
       {
         id: "delivery-state",
         title: { zh: "目前實作與產品路線", en: "Current implementation and product roadmap" },
-        body: { zh: "目前版本已固定公開檔案的結構、檢索方式與閱讀介面，並加入由伺服器保管憑證的 Kimi 問答：每次只檢索最相關的公開章節，回答同時返回穩定引用。向量資料庫、更多個人知識來源與分散式限流仍保留在後續路線。", en: "The current version stabilizes public archive structure, retrieval, and reading, and adds Kimi Q&A with credentials kept on the server. Each request retrieves only the most relevant public sections and returns stable citations. A vector store, broader personal knowledge sources, and distributed rate limiting remain later work." },
+        body: { zh: "目前版本已固定公開檔案的結構、檢索方式與閱讀介面，並加入由伺服器保管憑證的 Kimi 2.6 問答。Ask 以關鍵詞檢索公開節點後返回帶來源的串流回答；單一專案最多 2 個節點，跨專案最多 4 個。伺服器端停用 thinking，缺少憑證或上游失敗時返回明確錯誤。", en: "The current version stabilizes public archive structure, retrieval, and reading, and adds Kimi 2.6 Q&A with credentials kept on the server. Ask uses keyword retrieval over public nodes and returns a cited stream; a single-project request returns up to 2 nodes, and a cross-project request up to 4. Server-side thinking is disabled, and missing credentials or upstream failure returns an explicit error." },
         capabilities: [
           { title: { zh: "結構化專案檔案", en: "Structured project archives" }, detail: { zh: "專案、章節、來源、圖表與媒體使用穩定節點。", en: "Projects, sections, sources, figures, and media use stable nodes." }, status: "implemented" },
           { title: { zh: "本地全文檢索", en: "Local full-text retrieval" }, detail: { zh: "在公開檔案中查找專案、章節、標籤和來源。", en: "Search projects, sections, tags, and sources across public archives." }, status: "implemented" },
           { title: { zh: "雙語與響應式介面", en: "Bilingual responsive interface" }, detail: { zh: "中文與英文共用內容節點，桌面和手機保留一致層級。", en: "Chinese and English share content nodes across desktop and mobile layouts." }, status: "implemented" },
-          { title: { zh: "伺服器端章節檢索", en: "Server-side section retrieval" }, detail: { zh: "以關鍵詞從公開內容選出最相關的 1–2 個章節。", en: "Select the 1–2 most relevant sections from publication-approved content." }, status: "implemented" },
-          { title: { zh: "帶來源的模型回答", en: "Source-aware model answers" }, detail: { zh: "由伺服器保管 Kimi 憑證，流式回答同時返回檔案章節。", en: "Keep Kimi credentials on the server and stream answers with archive sections." }, status: "implemented" },
-          { title: { zh: "向量知識索引", en: "Vector knowledge index" }, detail: { zh: "將更多經過公開審核的個人資料寫入可維護的向量索引。", en: "Index broader publication-approved personal material in a maintainable vector store." }, status: "planned" },
+          { title: { zh: "伺服器端章節檢索", en: "Server-side section retrieval" }, detail: { zh: "以關鍵詞從公開內容選出節點；單一專案最多 2 個，跨專案最多 4 個。", en: "Use keyword retrieval over public content; up to 2 nodes for one project and up to 4 across projects." }, status: "implemented" },
+          { title: { zh: "帶來源的模型回答", en: "Source-aware model answers" }, detail: { zh: "由伺服器保管 Kimi 2.6 憑證，停用 thinking，並以串流回答返回檔案章節。", en: "Keep Kimi 2.6 credentials on the server, disable thinking, and stream answers with archive sections." }, status: "implemented" },
+          { title: { zh: "向量知識索引", en: "Vector knowledge index" }, detail: { zh: "目前未接入向量資料庫，仍列為後續方向。", en: "No vector database is connected; this remains a later direction." }, status: "planned" },
         ],
-        sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+        sources: [knowledgeAtlasAskSource, knowledgeAtlasRetrievalSource, knowledgeAtlasReadmeBoundaries],
+        subsections: [{
+          id: "retrieval-example",
+          title: { zh: "一次分工問題的檢索修訂", en: "A retrieval revision for a contribution question" },
+          body: { zh: "測試問題是「無人機畢業設計是誰完成的？導師提供了哪些協助？」原先檢索選到研究路線與自主執行章節，缺少完整的分工說明。修訂後，分工、成果與環境問題會優先取得專案概覽，其中分開記錄個人完成範圍、導師提供的硬體與驗證邊界。這個案例驗證的是來源選取，不代表所有模型回答都正確。", en: "The test question asks who completed the UAV graduation project and what the supervisor provided. Retrieval previously selected the research-route and autonomous-loop chapters, which lacked a complete contribution statement. The revision prioritizes project overviews for contribution, outcome, and environment questions, separating personal work, supervisor-provided hardware, and validation limits. This case checks source selection, not the correctness of every model answer." },
+          sources: [{ kind: "repository", label: { zh: "回歸問題集 · 來源選取", en: "Regression questions · Source selection" }, href: "https://github.com/G1antBot/knowledge-atlas/blob/main/tests/ask-evaluation-cases.ts" }, knowledgeAtlasRetrievalSource],
+        }],
       },
       {
         id: "limits",
         title: { zh: "目前邊界", en: "Current boundaries" },
-        body: { zh: "目前可以核驗的是前端程式、公開檔案、本地搜尋、伺服器端關鍵詞檢索與帶來源的模型問答。網站尚未接入向量化的個人知識庫，也沒有可公開的營運資料；問題會傳送至外部 Kimi API，因此介面會提醒訪客不要輸入個人或機密資訊。", en: "The verifiable scope now includes the front end, public archives, local search, server-side keyword retrieval, and cited model answers. The site is not connected to a vectorized personal knowledge base and has no public operational dataset. Questions are sent to the external Kimi API, so the interface tells visitors not to enter personal or confidential information." },
-        sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+        body: { zh: "目前公開功能包括前端、公開檔案、本地全文檢索、伺服器端關鍵詞檢索與帶來源的 Kimi 2.6 問答。Ask 不使用外部網路搜尋、向量資料庫、回饋儲存或多輪理解；缺少模型憑證或上游請求失敗時返回明確錯誤，不回退到本地摘錄。問題會傳送至外部 Kimi API，介面因此提醒訪客不要輸入個人或機密資訊。", en: "Current public functions include the front end, public archives, local full-text search, server-side keyword retrieval, and cited Kimi 2.6 answers. Ask does not use external web search, a vector database, feedback storage, or multi-turn understanding; missing credentials or upstream failure returns an explicit error instead of a local-excerpt fallback. Questions are sent to the external Kimi API, so the interface reminds visitors not to enter personal or confidential information." },
+        sources: [knowledgeAtlasReadmeBoundaries, knowledgeAtlasAskSource],
       },
     ],
-    sources: [knowledgeAtlasRepository, knowledgeAtlasReadme],
+    sources: [knowledgeAtlasRepository, knowledgeAtlasContentModel, knowledgeAtlasRetrievalSource, knowledgeAtlasAskSource, knowledgeAtlasReadmeBoundaries],
   },
 ];
 
@@ -723,9 +822,9 @@ export const curriculumGroups: CurriculumGroup[] = [
 export const internships: InternshipRecord[] = [
   {
     period: "2026.01.01—2026.05.29",
-    company: { zh: "長沙空中翼身智能科技有限公司", en: "Changsha Kongzhong Lingniao Intelligent Technology Co., Ltd." },
+    company: { zh: "長沙空中翼身智能科技有限公司", en: "長沙空中翼身智能科技有限公司" },
     detail: { zh: "集群智能事業部 · 實習生", en: "Swarm Intelligence Division · Intern" },
-    note: { zh: "在工作中保持勤奮，做事嚴謹；遇到不熟悉的問題時，會向有經驗的同事請教。", en: "The internship assessment records a diligent and careful working approach, including asking experienced colleagues when encountering unfamiliar problems." },
+    note: { zh: "", en: "" },
   },
 ];
 
@@ -772,6 +871,14 @@ export const topicIndex: Bilingual[] = [
 ];
 
 export const recommendedQuestions: Bilingual[] = [
+  { zh: "無人機畢業設計中，李文迪親自完成了哪些工作？", en: "Which parts of the UAV graduation project did Li Wendi personally complete?" },
+  { zh: "無人機專案交付了哪些功能？哪些是在模擬與室內聯調中完成？", en: "What did the UAV project deliver, and which parts were completed in simulation or indoor integration?" },
+  { zh: "圖片管理系統中，李文迪的後端角色涵蓋哪些交付？", en: "What did Li Wendi's backend role cover in the image management system?" },
+  { zh: "Knowledge Atlas 目前由李文迪完成了哪些功能？", en: "What has Li Wendi delivered in the current Knowledge Atlas?" },
+  { zh: "無人機專案的程式、YOLOE 訓練與評測、實際硬體分別由誰負責或提供？", en: "Who completed the UAV code, YOLOE training and evaluation, and who provided the physical hardware?" },
+  { zh: "無人機專案目前有哪些證據限制？是否做過戶外實飛或完整實體 strike 驗證？", en: "What are the UAV project's evidence limits? Was there outdoor flight or full physical strike validation?" },
+  { zh: "圖片管理系統的角色陳述有哪些來源，哪些結果沒有獨立驗收資料？", en: "Which sources support the image-system role statement, and which outcomes lack independent acceptance evidence?" },
+  { zh: "Knowledge Atlas 如何以關鍵詞檢索？目前有哪些向量、回饋儲存或多輪理解限制？", en: "How does Knowledge Atlas use keyword retrieval, and what are its current vector, feedback-storage, and multi-turn limits?" },
   { zh: "可以簡單介紹一下你自己嗎？", en: "Could you briefly introduce yourself?" },
   { zh: "為什麼要把大型語言模型放在高層決策？", en: "Why place the language model at the high-level decision layer?" },
   { zh: "混合路由如何決定走規則或模型？", en: "How does hybrid routing choose rules versus the model?" },
@@ -820,23 +927,23 @@ export const chatAnswers: ChatAnswer[] = [
     sources: [{ title: { zh: "終端穿越", en: "Terminal traverse" }, detail: { zh: "論文第 3 章／SIL README", en: "Thesis chapter 3 / SIL README" }, type: "project" }],
   },
   {
-    text: { zh: "提問頁會先從公開檔案選出最相關的章節，再由伺服器端 Kimi API 以流式方式整理回答並附上來源；沒有設定模型憑證時才回退到本地範例。檔案後續仍會補入可公開引用的專案資料，並繼續驗證從模擬到真實環境、複雜戶外場景與多機協同的遷移邊界。", en: "The question page first selects the most relevant public archive sections, then the server-side Kimi API streams a cited answer; it falls back to local examples only when model credentials are absent. Later work will add further citable project records and continue validating transfer from simulation to real environments, complex outdoor scenes, and multi-agent coordination." },
-    sources: [{ title: { zh: "目前限制與後續驗證", en: "Limitations & outlook" }, detail: { zh: "論文第 5 章 · 從模擬到真實與邊緣部署", en: "Thesis chapter 5 · simulation-to-real and edge deployment" }, type: "system" }],
+    text: { zh: "提問頁先從公開檔案選出最相關的節點，再由伺服器端 Kimi 2.6 以停用 thinking 的流式方式整理回答並附上來源。單一專案最多返回 2 個節點，跨專案最多返回 4 個；缺少模型憑證或上游請求失敗時返回明確錯誤，不回退到本地範例。Ask 不使用外部網路搜尋、向量資料庫、回饋儲存或多輪理解。", en: "The question page first selects the most relevant public nodes, then the server-side Kimi 2.6 streams a cited answer with thinking disabled. A single-project request returns up to 2 nodes, and a cross-project request up to 4; missing credentials or upstream failure returns an explicit error instead of a local-example fallback. Ask does not use external web search, a vector database, feedback storage, or multi-turn understanding." },
+    sources: [{ title: { zh: "Ask 目前邊界", en: "Current Ask boundaries" }, detail: { zh: "Knowledge Atlas · Ask 路由與檔案檢索", en: "Knowledge Atlas · Ask route and archive retrieval" }, type: "system" }],
   },
   {
     text: { zh: "掃碼登入由 Web、移動端與服務端共同完成。Web 端先取得隨機字串並產生二維碼，移動端掃描後提交字串與使用者資訊，服務端完成配對與身分檢查，再把登入結果交回 Web 端；登入狀態同時支援 7 天持久化鑑權。", en: "QR login spans the web client, mobile client, and server. The web client requests a random string and presents it as a QR code; mobile submits the scanned string with user information; the server matches and validates the request before returning the login result. The session also supports seven-day persistence." },
     sources: [{ title: { zh: "掃碼登入與持久化鑑權", en: "QR login and persistent authentication" }, detail: { zh: "圖片管理系統答辯簡報／個人履歷", en: "Image management presentation / personal resume" }, type: "project" }],
   },
   {
-    text: { zh: "這是四人團隊專案，個人角色為後端開發，負責掃碼與持久化登入、阿里雲 OSS 與敏感資訊過濾，並使用 GitLab／Git Flow 協作，編寫 Dockerfile 完成容器化部署；PC 與 Android 端等團隊交付不會全部歸為個人成果。", en: "This was a four-person team project. The documented role covered backend development, including QR and persistent login, Alibaba Cloud OSS and sensitive-content filtering, GitLab / Git Flow collaboration, and Dockerfile-based deployment. The team's PC and Android delivery is not presented as entirely individual work." },
-    sources: [{ title: { zh: "團隊角色與主要工作", en: "Team role and primary contributions" }, detail: { zh: "個人履歷 · 圖片管理系統", en: "Personal resume · Image Management System" }, type: "archive" }],
+    text: { zh: "這是四人團隊專案；個人履歷自述的角色為後端開發，涵蓋掃碼與持久化登入、阿里雲 OSS、敏感資訊過濾、GitLab／Git Flow 協作，以及 Dockerfile 容器化部署。這些個人分工沒有獨立驗收或正式生產證據；PC 與 Android 端等團隊交付不會全部歸為個人成果。", en: "This was a four-person team project. The personal resume describes a backend role covering QR and persistent login, Alibaba Cloud OSS, sensitive-content filtering, GitLab / Git Flow collaboration, and Dockerfile-based containerization. These individual responsibilities have no independent acceptance or production evidence; the team's PC and Android delivery is not presented as entirely individual work." },
+    sources: [{ title: { zh: "團隊角色與主要工作", en: "Team role and primary contributions" }, detail: { zh: "個人履歷 · 圖片管理系統 · 角色自述", en: "Personal resume · Image Management System · candidate-authored role statement" }, type: "archive" }],
   },
   {
     text: { zh: "Knowledge Atlas 以專案作為第一層入口。每個專案再拆成穩定章節，章節保留來源、圖表與媒體；本地搜尋同時索引專案、章節、標籤和來源，搜尋結果直接回到對應檔案或正文錨點。", en: "Knowledge Atlas uses projects as the first-level entry point. Each project is divided into stable sections that retain sources, figures, and media. Local search indexes projects, sections, tags, and sources, then returns directly to the relevant archive or text anchor." },
     sources: [{ title: { zh: "檔案與章節結構", en: "Archive and section structure" }, detail: { zh: "Knowledge Atlas · 公開原始碼與 README", en: "Knowledge Atlas · public source and README" }, type: "project" }],
   },
   {
-    text: { zh: "目前的伺服器路由會從公開檔案與經過篩選的個人資料中選出最相關的 1–2 個節點，模型憑證保存在伺服器環境中，流式回答同時返回對應來源。個人介紹只使用教育背景、專案方向與公開經歷；聯絡方式只有在問題明確詢問時才會加入資料。", en: "The server route selects the 1–2 most relevant nodes from public archives and the reviewed public profile, keeps model credentials in the server environment, and streams answers with matching citations. Profile answers use only education, project directions, and public experience; contact details are included only when a question explicitly asks for them." },
+    text: { zh: "目前的伺服器路由以關鍵詞從公開檔案與經整理的公開個人資料中選出節點：單一專案最多 2 個，跨專案最多 4 個。模型憑證保存在伺服器環境中，Kimi 2.6 停用 thinking；流式回答同時返回對應來源，缺少憑證或上游失敗時返回明確錯誤。個人介紹只使用教育背景、專案方向與公開經歷；聯絡方式只有在問題明確詢問時才會加入資料。", en: "The server route uses keyword retrieval to select nodes from public archives and the reviewed public profile: up to 2 nodes for one project and up to 4 across projects. Model credentials stay in the server environment, Kimi 2.6 runs with thinking disabled, and the stream returns matching citations; missing credentials or upstream failure returns an explicit error. Profile answers use only education, project directions, and public experience; contact details are included only when a question explicitly asks for them." },
     sources: [{ title: { zh: "目前實作與產品路線", en: "Current implementation and product roadmap" }, detail: { zh: "Knowledge Atlas · 產品路線", en: "Knowledge Atlas · product roadmap" }, type: "system" }],
   },
 ];

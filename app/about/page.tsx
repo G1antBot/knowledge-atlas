@@ -38,7 +38,7 @@ export default function AboutPage() {
           <h2>{zh ? "實習 / Internships" : "Internships / 實習"}</h2>
           <div className="education-grid">{publicProfile.internships.map((item) => <div className="education-item internship-item" key={item.period}>
             <span className="education-year">{item.period}</span>
-            <div><strong>{t(item.company, locale)}</strong><span>{t(item.detail, locale)}</span><p>{t(item.note, locale)}</p></div>
+            <div><strong>{t(item.company, locale)}</strong><span>{t(item.detail, locale)}</span>{t(item.note, locale) && <p>{t(item.note, locale)}</p>}</div>
           </div>)}</div>
         </section>
 
@@ -70,13 +70,13 @@ export default function AboutPage() {
           : "The groups below are organized from the Computer Science and Technology curriculum. They describe the scope of undergraduate study, not grades, rankings, or self-assessed mastery."}</p>
       </div>
 
-      <div className="curriculum-grid">{curriculumGroups.map((group) => <article className="curriculum-card" key={group.index}>
+      <details className="curriculum-disclosure"><summary>{zh ? "查看課程清單（含移動應用開發）" : "View courses, including mobile application development"}</summary><div className="curriculum-grid">{curriculumGroups.map((group) => <article className="curriculum-card" key={group.index}>
         <div className="curriculum-card-meta"><span>{group.index}</span><SourceTag>{zh ? "培養方案" : "Curriculum"}</SourceTag></div>
         <h3>{t(group.title, locale)}</h3>
         <p>{t(group.summary, locale)}</p>
         <ul>{group.courses.map((course) => <li key={course.zh}>{t(course, locale)}</li>)}</ul>
         <small>{t(group.source.label, locale)}</small>
-      </article>)}</div>
+      </article>)}</div></details>
     </section>
   </div>;
 }

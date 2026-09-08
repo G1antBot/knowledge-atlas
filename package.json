@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "tsc --noEmit",
     "check": "tsc --noEmit",
-    "test:retrieval": "node --require ./tests/node-userinfo-shim.cjs --import tsx --test tests/archive-retrieval.test.ts"
+    "test:retrieval": "node --require ./tests/node-userinfo-shim.cjs --import tsx --test tests/archive-retrieval.test.ts tests/archive-search.test.ts",
+    "test:ask": "node --require ./tests/node-userinfo-shim.cjs --import tsx --test tests/ask-route.test.ts tests/ask-evaluation.test.ts tests/answer-state.test.ts",
+    "test": "npm run test:retrieval && npm run test:ask"
   },
   "dependencies": {
     "@orama/orama": "^3.1.18",
